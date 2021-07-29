@@ -18,7 +18,7 @@ export default function App() {
   };
 
   const detect = async (detector: PoseDetector) => {
-    if (webcam.current) {
+    if (webcam.current && canvas.current) {
       const webcamCurrent = webcam.current as any;
       // go next step only when the video is completely uploaded.
       if (webcamCurrent.video.readyState === 4) {
@@ -32,7 +32,6 @@ export default function App() {
           video,
           {maxPoses: 1, flipHorizontal: false}
         );
-        console.log(predictions);
         if (predictions.length) {
           console.log(predictions);
         }
@@ -43,14 +42,18 @@ export default function App() {
           rendering.drawResult(predictions[0]);
         });
         detect(detector);
-      }
+      } else {
+        setTimeout(() => {
+          detect(detector);
+        }, 100);
+      };
     };
   };
 
   useEffect(() => {
     runPoseDetect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [webcam.current?.video?.readyState])
+  }, [])
 
   return (
     <div className="App">
