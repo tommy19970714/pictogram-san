@@ -2,18 +2,31 @@ import { useRef, useEffect } from "react";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
-import * as posedetection from "@tensorflow-models/pose-detection";
 import Webcam from "react-webcam";
-import { createDetector, PoseDetector } from "@tensorflow-models/pose-detection";
+import { createDetector, PoseDetector, SupportedModels, InputResolution } from "@tensorflow-models/pose-detection";
 import { Rendering } from "./models/rendering";
+// import {getValidInputResolutionDimensions, getValidOutputResolutionDimensions} from "./utils";
 
 export default function App() {
   const webcam = useRef<Webcam>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const modelName = posedetection.SupportedModels.PoseNet;
+  const modelName = SupportedModels.PoseNet;
+
+  const videoConstraints = {
+    width: 640,
+    height: 480,
+    facingMode: "user"
+  };
   
   const runPoseDetect = async () => {
-    const detector = await createDetector(modelName);
+    const resolution: InputResolution = { width: 500, height: 500 };
+    const detector = await createDetector(modelName, {
+      quantBytes: 4,
+      architecture: 'MobileNetV1',
+      outputStride: 16,
+      inputResolution: resolution,
+      multiplier: 0.75
+    });
     detect(detector);
   };
 
@@ -27,6 +40,7 @@ export default function App() {
         const videoHeight = webcamCurrent.video.videoHeight;
         canvas.current.width = videoWidth;
         canvas.current.height = videoHeight;
+        console.log(`videoWidth: ${videoWidth}, videoHeight: ${videoHeight}`);
 
         const predictions = await detector.estimatePoses(
           video,
@@ -62,6 +76,7 @@ export default function App() {
       </header>
       <Webcam
         audio={false}
+        videoConstraints={videoConstraints}
         ref={webcam}
         style={{
           position: "absolute",
