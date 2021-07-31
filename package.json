@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "format": "prettier --write .",
+    "lint": "eslint . --fix --ext .ts,.tsx"
   },
   "dependencies": {
     "@mediapipe/pose": "^0.4.1627343400",
