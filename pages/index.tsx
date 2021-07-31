@@ -1,73 +1,49 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
 import Webcam from "react-webcam";
-import { createDetector, PoseDetector, SupportedModels, InputResolution } from "@tensorflow-models/pose-detection";
-import { Rendering } from "./models/rendering";
-// import {getValidInputResolutionDimensions, getValidOutputResolutionDimensions} from "./utils";
+import * as posenet from "@tensorflow-models/posenet";
+import { drawKeypoints, drawSkeleton } from "./models/rendering";
 
 export default function App() {
-  const webcam = useRef<Webcam>(null);
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const modelName = SupportedModels.PoseNet;
-
-  const videoConstraints = {
-    width: 640,
-    height: 480,
-    facingMode: "user"
-  };
-  
-  const runPoseDetect = async () => {
-    const resolution: InputResolution = { width: 500, height: 500 };
-    const detector = await createDetector(modelName, {
-      quantBytes: 4,
-      architecture: 'MobileNetV1',
-      outputStride: 16,
-      inputResolution: resolution,
-      multiplier: 0.75
-    });
-    detect(detector);
-  };
-
-  const detect = async (detector: PoseDetector) => {
-    if (webcam.current && canvas.current) {
-      const webcamCurrent = webcam.current as any;
-      // go next step only when the video is completely uploaded.
-      if (webcamCurrent.video.readyState === 4) {
-        const video = webcamCurrent.video;
-        const videoWidth = webcamCurrent.video.videoWidth;
-        const videoHeight = webcamCurrent.video.videoHeight;
-        canvas.current.width = videoWidth;
-        canvas.current.height = videoHeight;
-        console.log(`videoWidth: ${videoWidth}, videoHeight: ${videoHeight}`);
-
-        const predictions = await detector.estimatePoses(
-          video,
-          {maxPoses: 1, flipHorizontal: false}
-        );
-        if (predictions.length) {
-          console.log(predictions);
-        }
-        
-        const ctx = canvas.current.getContext("2d") as CanvasRenderingContext2D;
-        const rendering = new Rendering(modelName, ctx);
-        requestAnimationFrame(() => {
-          rendering.drawResult(predictions[0]);
-        });
-        detect(detector);
-      } else {
-        setTimeout(() => {
-          detect(detector);
-        }, 100);
-      };
-    };
-  };
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const webcamRef = useRef<Webcam>(null);
+  const [net, setNet] = useState<posenet.PoseNet>();
 
   useEffect(() => {
-    runPoseDetect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    posenet.load().then((net: posenet.PoseNet) => {
+      setNet(net);
+    });
+  }, []);
+
+  const drawimage = async (
+    webcam: HTMLVideoElement,
+    context: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement
+  ) => {
+    (async function drawMask() {
+      requestAnimationFrame(drawMask);
+      const pose = await net.estimateSinglePose(webcam, {
+        flipHorizontal: false,
+      });
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawKeypoints(pose["keypoints"], 0.6, context);
+      drawSkeleton(pose["keypoints"], 0.7, context);
+    })();
+  };
+
+  const clickHandler = async () => {
+    const webcam = webcamRef.current.video as HTMLVideoElement;
+    const canvas = canvasRef.current;
+    webcam.width = canvas.width = webcam.videoWidth;
+    webcam.height = canvas.height = webcam.videoHeight;
+    const context = canvas.getContext("2d");
+
+    if (net) {
+      drawimage(webcam, context, canvas);
+    }
+  };
 
   return (
     <div className="App">
@@ -76,8 +52,7 @@ export default function App() {
       </header>
       <Webcam
         audio={false}
-        videoConstraints={videoConstraints}
-        ref={webcam}
+        ref={webcamRef}
         style={{
           position: "absolute",
           margin: "auto",
@@ -89,7 +64,7 @@ export default function App() {
         }}
       />
       <canvas
-        ref={canvas}
+        ref={canvasRef}
         style={{
           position: "absolute",
           margin: "auto",
@@ -100,6 +75,7 @@ export default function App() {
           zIndex: 9,
         }}
       />
+      <button onClick={clickHandler}>ボタン</button>
     </div>
-  )
+  );
 }
