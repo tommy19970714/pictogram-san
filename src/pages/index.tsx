@@ -10,11 +10,13 @@ import {
   InputResolution,
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
+import { RingBuffer } from '../models/RingBuffer'
 
 export default function App() {
   const webcam = useRef<Webcam>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const modelName = SupportedModels.PoseNet
+  const ringBuffre = new RingBuffer()
 
   const videoConstraints = {
     width: 640,
@@ -58,7 +60,7 @@ export default function App() {
         }
 
         const ctx = canvas.current.getContext('2d') as CanvasRenderingContext2D
-        const rendering = new Render(modelName, ctx)
+        const rendering = new Render(modelName, ctx, ringBuffre)
         requestAnimationFrame(() => {
           rendering.drawResult(predictions[0])
         })

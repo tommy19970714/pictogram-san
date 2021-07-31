@@ -7,6 +7,7 @@ import {
   Pose,
 } from '@tensorflow-models/pose-detection'
 import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
+import { RingBuffer } from './RingBuffer'
 
 export const POSENET_CONFIG = {
   maxPoses: 1,
@@ -20,11 +21,17 @@ export class Render {
   ctx: CanvasRenderingContext2D
   modelName: SupportedModels
   modelConfig: any
+  ringBuffer: RingBuffer
 
-  constructor(model: SupportedModels, context: CanvasRenderingContext2D) {
+  constructor(
+    model: SupportedModels,
+    context: CanvasRenderingContext2D,
+    ringBuffer: RingBuffer
+  ) {
     this.modelName = model
     this.ctx = context
     this.modelConfig = { ...POSENET_CONFIG }
+    this.ringBuffer = ringBuffer
   }
 
   /**
@@ -108,14 +115,17 @@ export class Render {
   drawStickFigure(keypoints: Keypoint[]) {
     this.ctx.fillStyle = '#032164'
 
-    const faceCenter = this.getFaceCenter(keypoints)
+    this.ringBuffer.add(keypoints)
+    const currentKP = this.ringBuffer.getAverage()
+
+    const faceCenter = this.getFaceCenter(currentKP)
     const leftNose2Ear = Math.hypot(
-      keypoints[1].x - keypoints[0].x,
-      keypoints[1].y - keypoints[0].y
+      currentKP[1].x - currentKP[0].x,
+      currentKP[1].y - currentKP[0].y
     )
     const rightNose2Ear = Math.hypot(
-      keypoints[0].x - keypoints[2].x,
-      keypoints[0].y - keypoints[2].y
+      currentKP[0].x - currentKP[2].x,
+      currentKP[0].y - currentKP[2].y
     )
     const faceRadius = Math.max(leftNose2Ear, rightNose2Ear) * 2
     const stickRadius1 = faceRadius * 0.6
@@ -130,15 +140,15 @@ export class Render {
     // 手足
     const rootAry = [5, 11] // 肩, 腰
     rootAry.forEach((i) => {
-      const isLeft1 = keypoints[i].x < keypoints[i + 1].x
-      const isLeft2 = keypoints[i + 2].x < keypoints[i + 3].x
-      const isLeft3 = keypoints[i + 4].x < keypoints[i + 5].x
-      const point1L = isLeft1 ? keypoints[i] : keypoints[i + 1]
-      const point1R = isLeft1 ? keypoints[i + 1] : keypoints[i]
-      const point2L = isLeft2 ? keypoints[i + 2] : keypoints[i + 3]
-      const point2R = isLeft2 ? keypoints[i + 3] : keypoints[i + 2]
-      const point3L = isLeft3 ? keypoints[i + 4] : keypoints[i + 5]
-      const point3R = isLeft3 ? keypoints[i + 5] : keypoints[i + 4]
+      const isLeft1 = currentKP[i].x < currentKP[i + 1].x
+      const isLeft2 = currentKP[i + 2].x < currentKP[i + 3].x
+      const isLeft3 = currentKP[i + 4].x < currentKP[i + 5].x
+      const point1L = isLeft1 ? currentKP[i] : currentKP[i + 1]
+      const point1R = isLeft1 ? currentKP[i + 1] : currentKP[i]
+      const point2L = isLeft2 ? currentKP[i + 2] : currentKP[i + 3]
+      const point2R = isLeft2 ? currentKP[i + 3] : currentKP[i + 2]
+      const point3L = isLeft3 ? currentKP[i + 4] : currentKP[i + 5]
+      const point3R = isLeft3 ? currentKP[i + 5] : currentKP[i + 4]
 
       if (this.isReliable(point1L) && this.isReliable(point2L)) {
         this.drawStick(point1L, stickRadius1, point2L, stickRadius2)
