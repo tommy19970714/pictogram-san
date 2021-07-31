@@ -40,7 +40,7 @@ export const RecordedVideo = (props: { recordedChunks: BlobPart[] }) => {
         }}
         controls
         src={videoUrl}
-      ></video>
+      />
       {!isVideoStarted && (
         <img
           src="/svgs/start.svg"
