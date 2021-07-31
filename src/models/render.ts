@@ -172,7 +172,7 @@ export class Render {
     region.closePath()
 
     // Fill path
-    this.ctx.fill(region, 'evenodd')
+    this.ctx.fill(region)
   }
 
   drawCircle(center: Vector2D, radius: number) {
