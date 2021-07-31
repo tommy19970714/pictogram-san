@@ -44,8 +44,8 @@ export class Rendering {
     const keypointInd = posedetection.util.getKeypointIndexBySide(
       this.modelName
     );
-    this.ctx.fillStyle = "White";
-    this.ctx.strokeStyle = "White";
+    this.ctx.fillStyle = "black";
+    this.ctx.strokeStyle = "black";
     this.ctx.lineWidth = DEFAULT_LINE_WIDTH;
 
     for (const i of keypointInd.middle) {
@@ -81,8 +81,8 @@ export class Rendering {
    * @param keypoints A list of keypoints.
    */
   drawSkeleton(keypoints: Keypoint[]) {
-    this.ctx.fillStyle = "White";
-    this.ctx.strokeStyle = "White";
+    this.ctx.fillStyle = "black";
+    this.ctx.strokeStyle = "black";
     this.ctx.lineWidth = DEFAULT_LINE_WIDTH;
 
     posedetection.util.getAdjacentPairs(this.modelName).forEach(([i, j]) => {
