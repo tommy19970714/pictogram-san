@@ -21,7 +21,6 @@ export default function App() {
   const mediaRecorderRef = useRef<any>(null)
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState([])
-  const [video, setVideo] = useState<string>('')
   const { width, height } = useWindowDimensions()
 
   const handleStartCaptureClick = useCallback(() => {
@@ -66,7 +65,6 @@ export default function App() {
       const url = URL.createObjectURL(blob)
       const video = document.getElementById('video-replay') as HTMLVideoElement
       video.src = url
-      setVideo(url)
     }
   }, [recordedChunks])
 
