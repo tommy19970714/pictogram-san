@@ -1,0 +1,56 @@
+{
+  "env": {
+    "browser": true,
+    "jest": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    // "airbnb",
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint", "react", "import", "unused-imports"],
+  "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".ts", ".tsx"] }],
+    "import/extensions": 0,
+    // "unused-imports/no-unused-imports-ts": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_" }
+    ], // TypeScript用のno-unused-varsを有効にしている。
+    "no-console": ["warn", { "allow": ["log", "error"] }], // 本番はlogをallowから消して，no-consoleにする
+    "react/prop-types": "off", // TypeScriptではprop-types不要。というかoffらないとlintに引っかかる
+    "linebreak-style": [2, "unix"] // 改行コードはLFにそろえる
+  },
+  "settings": {
+    "react": {
+      "version": "detect" // デフォルトっぽい設定だけど入れないとwarningが出た。。。どこか間違ったのだろうか。。。
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      // use <root>/tsconfig.json
+      "typescript": {
+        "alwaysTryTypes": true, // always try to resolve types under `<roo/>@types` directory even it doesn't contain any source code, like `@types/unist`
+        "directory": "./tsconfig.json"
+      }
+    }
+  }
+}
