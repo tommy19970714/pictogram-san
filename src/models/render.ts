@@ -128,21 +128,41 @@ export class Render {
     }
 
     // 手足
-    const rootAry = [5, 6, 11, 12] // 左肩, 右肩, 左腰, 右腰
+    const rootAry = [5, 11] // 肩, 腰
     rootAry.forEach((i) => {
-      const point1 = { x: keypoints[i].x, y: keypoints[i].y }
-      const point2 = { x: keypoints[i + 2].x, y: keypoints[i + 2].y }
-      const point3 = { x: keypoints[i + 4].x, y: keypoints[i + 4].y }
+      const switch1 = keypoints[i].x < keypoints[i + 1].x
+      const switch2 = keypoints[i + 2].x < keypoints[i + 3].x
+      const switch3 = keypoints[i + 4].x < keypoints[i + 5].x
+      const point1L = switch1 ? keypoints[i] : keypoints[i + 1]
+      const point1R = switch1 ? keypoints[i + 1] : keypoints[i]
+      const point2L = switch2 ? keypoints[i + 2] : keypoints[i + 3]
+      const point2R = switch2 ? keypoints[i + 3] : keypoints[i + 2]
+      const point3L = switch3 ? keypoints[i + 4] : keypoints[i + 5]
+      const point3R = switch3 ? keypoints[i + 5] : keypoints[i + 4]
 
-      this.drawStick(point1, stickRadius1, point2, stickRadius2)
-      this.drawStick(point2, stickRadius2, point3, stickRadius3)
+      if (this.isReliable(point1L) && this.isReliable(point2L)) {
+        this.drawStick(point1L, stickRadius1, point2L, stickRadius2)
+      }
+      if (this.isReliable(point2L) && this.isReliable(point3L)) {
+        this.drawStick(point2L, stickRadius2, point3L, stickRadius3)
+      }
+      if (this.isReliable(point1R) && this.isReliable(point2R)) {
+        this.drawStick(point1R, stickRadius1, point2R, stickRadius2)
+      }
+      if (this.isReliable(point2R) && this.isReliable(point3R)) {
+        this.drawStick(point2R, stickRadius2, point3R, stickRadius3)
+      }
     })
   }
 
+  isReliable(point: Keypoint) {
+    return point.score && point.score > POSENET_CONFIG.scoreThreshold
+  }
+
   drawStick(
-    point1: Vector2D,
+    point1: Keypoint,
     point1Radius: number,
-    point2: Vector2D,
+    point2: Keypoint,
     point2Radius: number
   ) {
     this.drawCircle(point1, point1Radius)
