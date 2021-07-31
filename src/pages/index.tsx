@@ -11,6 +11,8 @@ import {
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
 import { isSafari } from 'react-device-detect'
+import { useWindowDimensions } from '../hooks/useWindowDimensions'
+import { RecordButton } from '../components/button'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -21,10 +23,11 @@ export default function App() {
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState([])
   const [video, setVideo] = useState<string>('')
+  const { width, height } = useWindowDimensions()
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
-    const canvasStream = (canvasRef.current as any).captureStream()
+    const canvasStream = (canvasRef.current as any).captureStream(60)
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: isSafari ? 'video/mp4' : 'video/webm',
     })
@@ -33,6 +36,10 @@ export default function App() {
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
+    // とりあえず3秒後に止めるようにする
+    setTimeout(() => {
+      handleStopCaptureClick()
+    }, 3000)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webcamRef, setCapturing, mediaRecorderRef])
 
@@ -48,8 +55,9 @@ export default function App() {
   const handleStopCaptureClick = useCallback(() => {
     mediaRecorderRef?.current?.stop()
     setCapturing(false)
+    handleDownload()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaRecorderRef, webcamRef, setCapturing])
+  }, [mediaRecorderRef, webcamRef, setCapturing, recordedChunks])
 
   const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
@@ -64,8 +72,8 @@ export default function App() {
   }, [recordedChunks])
 
   const videoConstraints = {
-    width: 150,
-    height: 150,
+    width: width > height ? height / 2 : width,
+    height: height / 2,
     facingMode: 'user',
   }
 
@@ -168,21 +176,45 @@ export default function App() {
           zIndex: 9,
         }}
       />
-      {capturing ? (
-        <button className="btn btn-danger" onClick={handleStopCaptureClick}>
-          Stop Capture
-        </button>
-      ) : (
-        <button className="btn btn-danger" onClick={handleStartCaptureClick}>
-          Start Capture
-        </button>
-      )}
-      {recordedChunks.length > 0 && (
+      <svg
+        width="65"
+        height="65"
+        viewBox="0 0 65 65"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        onClick={handleStartCaptureClick}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9,
+          cursor: 'pointer',
+        }}
+      >
+        <circle cx="32.5" cy="32.5" r="27.5" fill="#FE3D2F" />
+        <circle cx="32.5" cy="32.5" r="31" stroke="white" strokeWidth="3" />
+      </svg>
+      {/* {recordedChunks.length > 0 && (
         <div>
           <button onClick={handleDownload}>Download</button>
-          <video id="video-replay" height="400" width="500" controls></video>
+          <video
+            id="video-replay"
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9,
+            }}
+            controls
+          ></video>
         </div>
-      )}
+      )} */}
     </div>
   )
 }
