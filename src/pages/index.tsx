@@ -9,8 +9,7 @@ import {
   SupportedModels,
   InputResolution,
 } from '@tensorflow-models/pose-detection'
-import { Rendering } from './models/rendering'
-// import {getValidInputResolutionDimensions, getValidOutputResolutionDimensions} from "./utils";
+import { Render } from '../models/render'
 
 export default function App() {
   const webcam = useRef<Webcam>(null)
@@ -59,7 +58,7 @@ export default function App() {
         }
 
         const ctx = canvas.current.getContext('2d') as CanvasRenderingContext2D
-        const rendering = new Rendering(modelName, ctx)
+        const rendering = new Render(modelName, ctx)
         requestAnimationFrame(() => {
           rendering.drawResult(predictions[0])
         })
