@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "format": "prettier --write .",
+    "lint": "eslint . --fix --ext .ts,.tsx"
   },
   "dependencies": {
     "@mediapipe/pose": "^0.4.1627343400",
@@ -23,8 +24,13 @@
   },
   "devDependencies": {
     "@types/react": "17.0.15",
-    "eslint": "7.31.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "eslint": "^7.32.0",
     "eslint-config-next": "11.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-unused-imports": "^1.1.2",
+    "prettier": "^2.3.2",
     "typescript": "4.3.5"
   }
 }
