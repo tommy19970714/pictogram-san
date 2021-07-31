@@ -5,7 +5,6 @@ const CountUpCircle = styled.div`
   display: inline-block;
   width: 80px;
   height: 80px;
-  text-align: center;
   line-height: 80px;
   border-radius: 50%;
   border: solid 1px black;
@@ -15,7 +14,7 @@ const LeftCount = styled.text`
   font-size: 30px;
   color: #000;
   font-weight: bold;
-  text-align: left;
+  margin-left: 10px;
 `
 
 const RightCount = styled.text`
@@ -27,7 +26,6 @@ const RightCount = styled.text`
 const DiagonalLine = styled.div`
   content: '';
   position: absolute;
-  z-index: 30;
   width: 44px;
   height: 1px;
   margin-left: 20px;
