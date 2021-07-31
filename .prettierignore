@@ -1,0 +1,10 @@
+*.min.css
+*.min.scss
+*.css
+*.scss
+*.log
+*.lock
+node_modules/
+.next/
+public/
+out/
