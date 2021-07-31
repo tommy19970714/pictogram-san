@@ -20,6 +20,7 @@ export default function App() {
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState([])
   const [video, setVideo] = useState<string>('')
+  const userAgent = window.navigator.userAgent
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
@@ -53,7 +54,7 @@ export default function App() {
   const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
-        type: 'video/webm',
+        type: userAgent === 'Safari' ? 'video/mp4' : 'video/webm',
       })
       const url = URL.createObjectURL(blob)
       const video = document.getElementById('video-replay') as HTMLVideoElement
@@ -63,8 +64,8 @@ export default function App() {
   }, [recordedChunks])
 
   const videoConstraints = {
-    width: 640,
-    height: 480,
+    width: 320,
+    height: 240,
     facingMode: 'user',
   }
 
