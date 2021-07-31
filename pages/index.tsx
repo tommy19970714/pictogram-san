@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 import '@tensorflow/tfjs-core'
 import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
@@ -74,7 +74,6 @@ export default function App() {
 
   useEffect(() => {
     runPoseDetect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
