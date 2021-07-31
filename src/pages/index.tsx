@@ -20,11 +20,11 @@ export default function App() {
   const [capturing, setCapturing] = useState<boolean>(false)
   const [recordedChunks, setRecordedChunks] = useState([])
   const [video, setVideo] = useState<string>('')
-  const userAgent = window.navigator.userAgent
 
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
     const canvasStream = (canvasRef.current as any).captureStream()
+    const userAgent = window.navigator.userAgent
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: userAgent === 'Safari' ? 'video/mp4' : 'video/webm',
     })
@@ -53,6 +53,7 @@ export default function App() {
 
   const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
+      const userAgent = window.navigator.userAgent
       const blob = new Blob(recordedChunks, {
         type: userAgent === 'Safari' ? 'video/mp4' : 'video/webm',
       })
