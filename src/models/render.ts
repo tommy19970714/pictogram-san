@@ -6,6 +6,7 @@ import {
   Keypoint,
   Pose,
 } from '@tensorflow-models/pose-detection'
+import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
 
 export const POSENET_CONFIG = {
   maxPoses: 1,
@@ -34,6 +35,7 @@ export class Render {
     if (pose.keypoints != null) {
       this.drawKeypoints(pose.keypoints)
       this.drawSkeleton(pose.keypoints)
+      this.drawStickFigure(pose.keypoints)
     }
   }
   /**
@@ -101,5 +103,104 @@ export class Render {
         this.ctx.stroke()
       }
     })
+  }
+
+  drawStickFigure(keypoints: Keypoint[]) {
+    this.ctx.fillStyle = '#032164'
+
+    const faceCenter = this.getFaceCenter(keypoints)
+    const leftNose2Ear = Math.hypot(
+      keypoints[1].x - keypoints[0].x,
+      keypoints[1].y - keypoints[0].y
+    )
+    const rightNose2Ear = Math.hypot(
+      keypoints[0].x - keypoints[2].x,
+      keypoints[0].y - keypoints[2].y
+    )
+    const faceRadius = Math.max(leftNose2Ear, rightNose2Ear) * 2
+    const stickRadius1 = faceRadius * 0.6
+    const stickRadius2 = stickRadius1 * 0.75
+    const stickRadius3 = stickRadius2 * 0.75
+
+    // # 顔 描画
+    if (faceCenter) {
+      this.drawCircle(faceCenter, faceRadius)
+    }
+
+    // 手足
+    const rootAry = [5, 6, 11, 12] // 左肩, 右肩, 左腰, 右腰
+    rootAry.forEach((i) => {
+      const point1 = { x: keypoints[i].x, y: keypoints[i].y }
+      const point2 = { x: keypoints[i + 2].x, y: keypoints[i + 2].y }
+      const point3 = { x: keypoints[i + 4].x, y: keypoints[i + 4].y }
+
+      this.drawStick(point1, stickRadius1, point2, stickRadius2)
+      this.drawStick(point2, stickRadius2, point3, stickRadius3)
+    })
+  }
+
+  drawStick(
+    point1: Vector2D,
+    point1Radius: number,
+    point2: Vector2D,
+    point2Radius: number
+  ) {
+    this.drawCircle(point1, point1Radius)
+    this.drawCircle(point2, point2Radius)
+
+    const drawList: Vector2D[] = []
+    ;[0, 1].forEach((index) => {
+      const rad =
+        Math.atan2(point2.y - point1.y, point2.x - point1.x) +
+        Math.PI / 2 +
+        Math.PI * index
+
+      const point1X = point1Radius * Math.cos(rad) + point1.x
+      const point1Y = point1Radius * Math.sin(rad) + point1.y
+      drawList.push({ x: point1X, y: point1Y })
+
+      const point2X = point2Radius * Math.cos(rad) + point2.x
+      const point2Y = point2Radius * Math.sin(rad) + point2.y
+      drawList.push({ x: point2X, y: point2Y })
+    })
+
+    const region = new Path2D()
+    region.moveTo(drawList[0].x, drawList[0].y)
+    region.lineTo(drawList[1].x, drawList[1].y)
+    region.lineTo(drawList[3].x, drawList[3].y)
+    region.lineTo(drawList[2].x, drawList[2].y)
+    region.closePath()
+
+    // Fill path
+    this.ctx.fill(region)
+  }
+
+  drawCircle(center: Vector2D, radius: number) {
+    this.ctx.beginPath()
+    this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, false)
+    this.ctx.fill()
+  }
+
+  getFaceCenter(keypoints: Keypoint[]) {
+    let sumX = 0
+    let sumY = 0
+    let count = 0
+    const facePointNames = [
+      'nose',
+      'left_eye',
+      'right_eye',
+      'left_ear',
+      'right_ear',
+    ]
+    keypoints
+      .filter((point) => point.name && facePointNames.includes(point.name))
+      .forEach((point) => {
+        if (point.score && point.score > POSENET_CONFIG.scoreThreshold) {
+          sumX += point.x
+          sumY += point.y
+          count += 1
+        }
+      })
+    return count > 0 && { x: sumX / count, y: sumY / count }
   }
 }
