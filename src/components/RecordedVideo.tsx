@@ -15,8 +15,8 @@ export const RecordedVideo = (props: { recordedChunks: BlobPart[] }) => {
   }, [])
 
   const startVideo = () => {
-    if (videoRef.current) {
-      const video = videoRef.current
+    const video = videoRef.current
+    if (video) {
       video.play()
       setIsVideoStarted(true)
       video.addEventListener('ended', function () {
