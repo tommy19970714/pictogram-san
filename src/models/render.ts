@@ -130,15 +130,15 @@ export class Render {
     // 手足
     const rootAry = [5, 11] // 肩, 腰
     rootAry.forEach((i) => {
-      const switch1 = keypoints[i].x < keypoints[i + 1].x
-      const switch2 = keypoints[i + 2].x < keypoints[i + 3].x
-      const switch3 = keypoints[i + 4].x < keypoints[i + 5].x
-      const point1L = switch1 ? keypoints[i] : keypoints[i + 1]
-      const point1R = switch1 ? keypoints[i + 1] : keypoints[i]
-      const point2L = switch2 ? keypoints[i + 2] : keypoints[i + 3]
-      const point2R = switch2 ? keypoints[i + 3] : keypoints[i + 2]
-      const point3L = switch3 ? keypoints[i + 4] : keypoints[i + 5]
-      const point3R = switch3 ? keypoints[i + 5] : keypoints[i + 4]
+      const isLeft1 = keypoints[i].x < keypoints[i + 1].x
+      const isLeft2 = keypoints[i + 2].x < keypoints[i + 3].x
+      const isLeft3 = keypoints[i + 4].x < keypoints[i + 5].x
+      const point1L = isLeft1 ? keypoints[i] : keypoints[i + 1]
+      const point1R = isLeft1 ? keypoints[i + 1] : keypoints[i]
+      const point2L = isLeft2 ? keypoints[i + 2] : keypoints[i + 3]
+      const point2R = isLeft2 ? keypoints[i + 3] : keypoints[i + 2]
+      const point3L = isLeft3 ? keypoints[i + 4] : keypoints[i + 5]
+      const point3R = isLeft3 ? keypoints[i + 5] : keypoints[i + 4]
 
       if (this.isReliable(point1L) && this.isReliable(point2L)) {
         this.drawStick(point1L, stickRadius1, point2L, stickRadius2)
