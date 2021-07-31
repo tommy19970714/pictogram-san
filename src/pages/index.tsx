@@ -38,7 +38,6 @@ export default function App() {
     setTimeout(() => {
       handleStopCaptureClick()
     }, 3000)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webcamRef, setCapturing, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
@@ -54,7 +53,6 @@ export default function App() {
     mediaRecorderRef?.current?.stop()
     setCapturing(false)
     handleDownload()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mediaRecorderRef, webcamRef, setCapturing, recordedChunks])
 
   const handleDownload = useCallback(() => {
