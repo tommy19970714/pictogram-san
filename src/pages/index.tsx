@@ -12,7 +12,6 @@ import {
 import { Render } from '../models/render'
 import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
-import { RecordButton } from '../components/button'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
