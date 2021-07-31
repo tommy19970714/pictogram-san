@@ -38,6 +38,9 @@ export default function App() {
         const video = webcamCurrent.video;
         const videoWidth = webcamCurrent.video.videoWidth;
         const videoHeight = webcamCurrent.video.videoHeight;
+        video.width = videoWidth;
+        video.height = videoHeight;
+
         canvas.current.width = videoWidth;
         canvas.current.height = videoHeight;
         console.log(`videoWidth: ${videoWidth}, videoHeight: ${videoHeight}`);
@@ -49,13 +52,13 @@ export default function App() {
         if (predictions.length) {
           console.log(predictions);
         }
-        
+
         const ctx = canvas.current.getContext("2d") as CanvasRenderingContext2D;
         const rendering = new Rendering(modelName, ctx);
         requestAnimationFrame(() => {
           rendering.drawResult(predictions[0]);
         });
-        detect(detector);
+        await detect(detector);
       } else {
         setTimeout(() => {
           detect(detector);
