@@ -15,7 +15,7 @@ export const POSENET_CONFIG = {
 export const DEFAULT_LINE_WIDTH = 2
 export const DEFAULT_RADIUS = 4
 
-export class Rendering {
+export class Render {
   ctx: CanvasRenderingContext2D
   modelName: SupportedModels
   modelConfig: any
