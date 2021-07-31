@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback, useState } from 'react'
 import '@tensorflow/tfjs-core'
 import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
@@ -10,15 +10,65 @@ import {
   InputResolution,
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
+import { isSafari } from 'react-device-detect'
+import { useWindowDimensions } from '../hooks/useWindowDimensions'
 
 export default function App() {
-  const webcam = useRef<Webcam>(null)
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const webcamRef = useRef<Webcam>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const modelName = SupportedModels.PoseNet
 
+  const mediaRecorderRef = useRef<any>(null)
+  const [capturing, setCapturing] = useState<boolean>(false)
+  const [recordedChunks, setRecordedChunks] = useState([])
+  const { width, height } = useWindowDimensions()
+
+  const handleStartCaptureClick = useCallback(() => {
+    setCapturing(true)
+    const canvasStream = (canvasRef.current as any).captureStream(60)
+    mediaRecorderRef.current = new MediaRecorder(canvasStream, {
+      mimeType: isSafari ? 'video/mp4' : 'video/webm',
+    })
+    mediaRecorderRef.current.addEventListener(
+      'dataavailable',
+      handleDataAvailable
+    )
+    mediaRecorderRef.current.start()
+    // とりあえず3秒後に止めるようにする
+    setTimeout(() => {
+      handleStopCaptureClick()
+    }, 3000)
+  }, [webcamRef, setCapturing, mediaRecorderRef])
+
+  const handleDataAvailable = useCallback(
+    ({ data }) => {
+      if (data.size > 0) {
+        setRecordedChunks((prev) => prev.concat(data))
+      }
+    },
+    [setRecordedChunks]
+  )
+
+  const handleStopCaptureClick = useCallback(() => {
+    mediaRecorderRef?.current?.stop()
+    setCapturing(false)
+    handleDownload()
+  }, [mediaRecorderRef, webcamRef, setCapturing, recordedChunks])
+
+  const handleDownload = useCallback(() => {
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: isSafari ? 'video/mp4' : 'video/webm',
+      })
+      const url = URL.createObjectURL(blob)
+      const video = document.getElementById('video-replay') as HTMLVideoElement
+      video.src = url
+    }
+  }, [recordedChunks])
+
   const videoConstraints = {
-    width: 640,
-    height: 480,
+    width: width > height ? height / 2 : width,
+    height: height / 2,
     facingMode: 'user',
   }
 
@@ -35,8 +85,8 @@ export default function App() {
   }
 
   const detect = async (detector: PoseDetector) => {
-    if (webcam.current && canvas.current) {
-      const webcamCurrent = webcam.current as any
+    if (webcamRef.current && canvasRef.current) {
+      const webcamCurrent = webcamRef.current as any
       // go next step only when the video is completely uploaded.
       if (webcamCurrent.video.readyState === 4) {
         const video = webcamCurrent.video
@@ -45,9 +95,8 @@ export default function App() {
         video.width = videoWidth
         video.height = videoHeight
 
-        canvas.current.width = videoWidth
-        canvas.current.height = videoHeight
-        console.log(`videoWidth: ${videoWidth}, videoHeight: ${videoHeight}`)
+        canvasRef.current.width = videoWidth
+        canvasRef.current.height = videoHeight * 2
 
         const predictions = await detector.estimatePoses(video, {
           maxPoses: 1,
@@ -57,10 +106,32 @@ export default function App() {
           console.log(predictions)
         }
 
-        const ctx = canvas.current.getContext('2d') as CanvasRenderingContext2D
-        const rendering = new Render(modelName, ctx)
+        const ctx = canvasRef.current.getContext(
+          '2d'
+        ) as CanvasRenderingContext2D
+
+        // ピクトグラム用のcanvas
+        const pictCanvas = document.createElement('canvas')
+        pictCanvas.width = videoWidth
+        pictCanvas.height = videoHeight
+        const picCanvasCtx = pictCanvas.getContext(
+          '2d'
+        ) as CanvasRenderingContext2D
+
+        // 動画用のcanvas
+        const videoCanvas = document.createElement('canvas')
+        const videoCanvasCtx = videoCanvas.getContext(
+          '2d'
+        ) as CanvasRenderingContext2D
+        videoCanvas.width = videoWidth
+        videoCanvas.height = videoHeight
+        videoCanvasCtx.drawImage(video, 0, 0, videoWidth, videoHeight)
+
+        const rendering = new Render(modelName, picCanvasCtx)
         requestAnimationFrame(() => {
           rendering.drawResult(predictions[0])
+          ctx.drawImage(pictCanvas, 0, 0, videoWidth, videoHeight)
+          ctx.drawImage(videoCanvas, 0, videoHeight, videoWidth, videoHeight)
         })
         await detect(detector)
       } else {
@@ -83,29 +154,62 @@ export default function App() {
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
-        ref={webcam}
+        ref={webcamRef}
         style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          top: 100,
-          left: 0,
-          right: 0,
-          zIndex: 9,
+          display: 'none',
         }}
       />
       <canvas
-        ref={canvas}
+        ref={canvasRef}
         style={{
           position: 'absolute',
           margin: 'auto',
           textAlign: 'center',
-          top: 100,
+          top: 0,
           left: 0,
           right: 0,
           zIndex: 9,
         }}
       />
+      <svg
+        width="65"
+        height="65"
+        viewBox="0 0 65 65"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        onClick={handleStartCaptureClick}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9,
+          cursor: 'pointer',
+        }}
+      >
+        <circle cx="32.5" cy="32.5" r="27.5" fill="#FE3D2F" />
+        <circle cx="32.5" cy="32.5" r="31" stroke="white" strokeWidth="3" />
+      </svg>
+      {/* {recordedChunks.length > 0 && (
+        <div>
+          <button onClick={handleDownload}>Download</button>
+          <video
+            id="video-replay"
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9,
+            }}
+            controls
+          ></video>
+        </div>
+      )} */}
     </div>
   )
 }
