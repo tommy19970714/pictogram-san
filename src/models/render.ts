@@ -107,8 +107,6 @@ export class Render {
 
   drawStickFigure(keypoints: Keypoint[]) {
     this.ctx.fillStyle = '#032164'
-    // this.ctx.strokeStyle = "White";
-    // this.ctx.lineWidth = DEFAULT_LINE_WIDTH;
 
     const faceCenter = this.getFaceCenter(keypoints)
     const leftNose2Ear = Math.hypot(
