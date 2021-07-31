@@ -12,6 +12,7 @@ import {
 import { Render } from '../models/render'
 import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
+import { RecordButton } from '../components/RecordButton'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -171,12 +172,7 @@ export default function App() {
           zIndex: 9,
         }}
       />
-      <svg
-        width="65"
-        height="65"
-        viewBox="0 0 65 65"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <RecordButton
         onClick={handleStartCaptureClick}
         style={{
           position: 'absolute',
@@ -186,12 +182,8 @@ export default function App() {
           left: 0,
           right: 0,
           zIndex: 9,
-          cursor: 'pointer',
         }}
-      >
-        <circle cx="32.5" cy="32.5" r="27.5" fill="#FE3D2F" />
-        <circle cx="32.5" cy="32.5" r="31" stroke="white" strokeWidth="3" />
-      </svg>
+      />
       {/* {recordedChunks.length > 0 && (
         <div>
           <button onClick={handleDownload}>Download</button>
