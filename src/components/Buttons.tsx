@@ -10,6 +10,7 @@ export const DefaultButton = styled.button`
   font-size: 15px;
   border: none;
   font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
 `
 
 export const PinkButton = styled(DefaultButton)`
