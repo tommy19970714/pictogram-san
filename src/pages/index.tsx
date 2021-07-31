@@ -12,6 +12,8 @@ import {
 import { Render } from '../models/render'
 import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
+import { RecordButton } from '../components/RecordButton'
+import { RecordedVideo } from '../components/RecordedVideo'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -19,12 +21,10 @@ export default function App() {
   const modelName = SupportedModels.PoseNet
 
   const mediaRecorderRef = useRef<any>(null)
-  const [capturing, setCapturing] = useState<boolean>(false)
-  const [recordedChunks, setRecordedChunks] = useState([])
+  const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
 
   const handleStartCaptureClick = useCallback(() => {
-    setCapturing(true)
     const canvasStream = (canvasRef.current as any).captureStream(60)
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: isSafari ? 'video/mp4' : 'video/webm',
@@ -38,7 +38,7 @@ export default function App() {
     setTimeout(() => {
       handleStopCaptureClick()
     }, 3000)
-  }, [webcamRef, setCapturing, mediaRecorderRef])
+  }, [webcamRef, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
     ({ data }) => {
@@ -51,20 +51,7 @@ export default function App() {
 
   const handleStopCaptureClick = useCallback(() => {
     mediaRecorderRef?.current?.stop()
-    setCapturing(false)
-    handleDownload()
-  }, [mediaRecorderRef, webcamRef, setCapturing, recordedChunks])
-
-  const handleDownload = useCallback(() => {
-    if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: isSafari ? 'video/mp4' : 'video/webm',
-      })
-      const url = URL.createObjectURL(blob)
-      const video = document.getElementById('video-replay') as HTMLVideoElement
-      video.src = url
-    }
-  }, [recordedChunks])
+  }, [mediaRecorderRef, webcamRef, recordedChunks])
 
   const videoConstraints = {
     width: width > height ? height / 2 : width,
@@ -102,9 +89,6 @@ export default function App() {
           maxPoses: 1,
           flipHorizontal: false,
         })
-        if (predictions.length) {
-          console.log(predictions)
-        }
 
         const ctx = canvasRef.current.getContext(
           '2d'
@@ -171,12 +155,7 @@ export default function App() {
           zIndex: 9,
         }}
       />
-      <svg
-        width="65"
-        height="65"
-        viewBox="0 0 65 65"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <RecordButton
         onClick={handleStartCaptureClick}
         style={{
           position: 'absolute',
@@ -186,30 +165,11 @@ export default function App() {
           left: 0,
           right: 0,
           zIndex: 9,
-          cursor: 'pointer',
         }}
-      >
-        <circle cx="32.5" cy="32.5" r="27.5" fill="#FE3D2F" />
-        <circle cx="32.5" cy="32.5" r="31" stroke="white" strokeWidth="3" />
-      </svg>
-      {/* {recordedChunks.length > 0 && (
-        <div>
-          <button onClick={handleDownload}>Download</button>
-          <video
-            id="video-replay"
-            style={{
-              position: 'absolute',
-              margin: 'auto',
-              textAlign: 'center',
-              top: 0,
-              left: 0,
-              right: 0,
-              zIndex: 9,
-            }}
-            controls
-          ></video>
-        </div>
-      )} */}
+      />
+      {recordedChunks.length > 0 && (
+        <RecordedVideo recordedChunks={recordedChunks} />
+      )}
     </div>
   )
 }
