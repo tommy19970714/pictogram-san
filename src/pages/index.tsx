@@ -10,6 +10,7 @@ import {
   InputResolution,
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
+import { isSafari } from 'react-device-detect'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -24,9 +25,8 @@ export default function App() {
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true)
     const canvasStream = (canvasRef.current as any).captureStream()
-    const userAgent = window.navigator.userAgent
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
-      mimeType: userAgent === 'Safari' ? 'video/mp4' : 'video/webm',
+      mimeType: isSafari ? 'video/mp4' : 'video/webm',
     })
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
@@ -53,9 +53,8 @@ export default function App() {
 
   const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
-      const userAgent = window.navigator.userAgent
       const blob = new Blob(recordedChunks, {
-        type: userAgent === 'Safari' ? 'video/mp4' : 'video/webm',
+        type: isSafari ? 'video/mp4' : 'video/webm',
       })
       const url = URL.createObjectURL(blob)
       const video = document.getElementById('video-replay') as HTMLVideoElement
@@ -65,8 +64,8 @@ export default function App() {
   }, [recordedChunks])
 
   const videoConstraints = {
-    width: 320,
-    height: 240,
+    width: 150,
+    height: 150,
     facingMode: 'user',
   }
 
