@@ -190,8 +190,6 @@ export class Render {
     region.lineTo(drawList[3].x, drawList[3].y)
     region.lineTo(drawList[2].x, drawList[2].y)
     region.closePath()
-
-    // Fill path
     this.ctx.fill(region)
   }
 
