@@ -88,7 +88,6 @@ export default function App() {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
     ) as MediaStream
-    const audio = audioRef.current
     canvasStream.addTrack(await getAudioTrack())
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: isSafari ? 'video/mp4' : 'video/webm',
