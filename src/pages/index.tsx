@@ -62,7 +62,18 @@ export default function App() {
     handleStartDrawing(false)
   }, [])
 
-  const handleRecordButton = () => {
+  const handleStartGame = () => {
+    setStage('moving')
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+      handleStartDrawing(true)
+    }
+    setTimeout(() => {
+      handleStartCapture()
+    }, 3000)
+  }
+
+  const handleRecordButtonClick = () => {
     setIsOpenModal(true)
     setStage('moving')
     const audio = audioRef.current
@@ -77,8 +88,9 @@ export default function App() {
 
   const handleStartClick = () => {
     setIsOpenModal(false)
-    handleStartCaptureClick()
+    handleStartCapture()
     audioPlay()
+    handleStartGame()
   }
 
   const audioPlay = () => {
@@ -93,7 +105,7 @@ export default function App() {
   }
 
   // ビデオ録画開始
-  const handleStartCaptureClick = useCallback(async () => {
+  const handleStartCapture = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
     ) as MediaStream
@@ -239,7 +251,7 @@ export default function App() {
       />
       {stage === 'ready' && (
         <RecordButton
-          onClick={handleStartGame}
+          onClick={handleRecordButtonClick}
           style={{
             position: 'absolute',
             margin: 'auto',
