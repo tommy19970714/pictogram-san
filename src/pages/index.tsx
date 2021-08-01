@@ -102,9 +102,6 @@ export default function App() {
         const pictCanvas = document.createElement('canvas')
         pictCanvas.width = videoWidth
         pictCanvas.height = videoHeight
-        const picCanvasCtx = pictCanvas.getContext(
-          '2d'
-        ) as CanvasRenderingContext2D
 
         // 動画用のcanvas
         const videoCanvas = document.createElement('canvas')
