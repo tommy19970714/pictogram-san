@@ -26,20 +26,9 @@ export default function App() {
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
-  const [net, setNet] = useState<PoseDetector>()
 
   useEffect(() => {
-    const resolution: InputResolution = { width: 500, height: 500 }
-    createDetector(modelName, {
-      quantBytes: 4,
-      architecture: 'MobileNetV1',
-      outputStride: 16,
-      inputResolution: resolution,
-      multiplier: 0.75,
-    }).then((detector: PoseDetector) => {
-      setIsLoaded(true)
-      setNet(detector)
-    })
+    handleStartDrawing()
   }, [])
 
   const handleStartCaptureClick = useCallback(() => {
@@ -77,18 +66,35 @@ export default function App() {
     facingMode: 'user',
   }
 
-  const clickHandler = async () => {
-    if (webcamRef.current && canvasRef.current) {
+  const handleLoadWaiting = async () => {
+    return new Promise((resolve) => {
+      const timer = setInterval(() => {
+        if (webcamRef.current?.video?.readyState == 4) {
+          resolve(true)
+          clearInterval(timer)
+        }
+      }, 500)
+    })
+  }
+
+  const handleStartDrawing = async () => {
+    const resolution: InputResolution = { width: 500, height: 500 }
+    const net = await createDetector(modelName, {
+      quantBytes: 4,
+      architecture: 'MobileNetV1',
+      outputStride: 16,
+      inputResolution: resolution,
+      multiplier: 0.75,
+    })
+    await handleLoadWaiting()
+    if (webcamRef.current && canvasRef.current && net) {
+      setIsLoaded(true)
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-      const videoWidth = webcam.videoWidth
-      const videoHeight = webcam.videoHeight
-      webcam.width = videoWidth
-      webcam.height = videoHeight
-      canvas.width = videoWidth
-      canvas.height = videoHeight
+      webcam.width = canvas.width = webcam.videoWidth
+      webcam.height = canvas.height = webcam.videoHeight
       const context = canvas.getContext('2d')
-      if (net && context) {
+      if (context) {
         drawimage(net, webcam, context, canvas)
       }
     }
@@ -122,7 +128,6 @@ export default function App() {
 
   return (
     <div>
-      <button onClick={clickHandler}>ボタン</button>
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
