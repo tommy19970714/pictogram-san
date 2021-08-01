@@ -66,8 +66,8 @@ const Loader = () => {
           <br />
           Challenge
         </Text>
-        <LoaderImage src="./svgs/loader.svg" alt="loader" />
-        <TopImage src="./svgs/top-icon.svg" alt="loader" />
+        <LoaderImage src="/svgs/loader.svg" alt="loader" />
+        <TopImage src="/svgs/top-icon.svg" alt="loader" />
       </LoaderWrapper>
     </DivWrapper>
   )
