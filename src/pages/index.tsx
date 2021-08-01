@@ -16,20 +16,9 @@ import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
-import CountDownView from '../components/CountDownView'
-import CountUpView from '../components/CountUpView'
-import OlympicPictogram, {
-  OLYMPIC_PICTOGRAMS_SVGS,
-} from '../components/OlympicPictogram'
+import { OLYMPIC_PICTOGRAMS_SVGS } from '../components/OlympicPictogram'
 
-type Stage =
-  | 'loading'
-  | 'ready'
-  | 'countdown'
-  | 'checking'
-  | 'moving'
-  | 'focus'
-  | 'share'
+type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -41,7 +30,7 @@ export default function App() {
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
   const [stage, setStage] = useState<Stage>('loading')
-  const [count, setCount] = useState<number>(1)
+  const [animationFrameId, setAnimationFrameId] = useState<number>()
   const [pictogramList, setPictogramList] = useState<string[]>(
     OLYMPIC_PICTOGRAMS_SVGS
   )
@@ -66,32 +55,19 @@ export default function App() {
 
   useEffect(() => {
     setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
-    handleStartDrawing()
+    handleStartDrawing(false)
   }, [])
 
-  useEffect(() => {
-    if (stage === 'countdown') {
-      setTimeout(() => {
-        setStage('checking')
-        handleStartCapture()
-      }, 3000)
-    } else if (stage === 'checking') {
-      setTimeout(() => {
-        setStage('moving')
-      }, 800)
-    } else if (stage === 'moving') {
-      setTimeout(() => {
-        setStage('focus')
-      }, 3000)
-    } else if (stage === 'focus') {
-      setTimeout(() => {
-        if (count < 6) {
-          setStage('checking')
-          setCount(count + 1)
-        }
-      }, 300)
+  const handleStartGame = () => {
+    setStage('moving')
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+      handleStartDrawing(true)
     }
-  }, [stage])
+    setTimeout(() => {
+      handleStartCapture()
+    }, 3000)
+  }
 
   const handleStartCapture = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
@@ -129,7 +105,6 @@ export default function App() {
   const handleStopCapture = useCallback(() => {
     const audio = audioRef.current
     if (audio) audio.pause()
-    console.log(mediaRecorderRef?.current)
     mediaRecorderRef?.current?.stop()
     setStage('share')
   }, [mediaRecorderRef, webcamRef, recordedChunks])
@@ -151,7 +126,7 @@ export default function App() {
     })
   }
 
-  const handleStartDrawing = async () => {
+  const handleStartDrawing = async (isGame: boolean) => {
     const resolution: InputResolution = { width: 500, height: 500 }
     const net = await createDetector(modelName, {
       quantBytes: 4,
@@ -171,7 +146,7 @@ export default function App() {
       canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
       if (context) {
-        drawimage(net, webcam, context, canvas)
+        drawimage(net, webcam, context, canvas, isGame)
       }
     }
   }
@@ -180,26 +155,41 @@ export default function App() {
     net: PoseDetector,
     webcam: HTMLVideoElement,
     context: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement
+    canvas: HTMLCanvasElement,
+    isGame: boolean
   ) => {
+    const startTime = Date.now()
     ;(async function drawMask() {
-      requestAnimationFrame(drawMask)
+      const id = requestAnimationFrame(drawMask)
+      setAnimationFrameId(id)
+
       const predictions = await net.estimatePoses(webcam, {
         maxPoses: 1,
         flipHorizontal: false,
       })
-      context.clearRect(0, 0, canvas.width, canvas.height)
-      context.fillStyle = 'white'
-      context.fillRect(0, 0, canvas.width, canvas.height)
-      // ピクトグラム用のcanvas
-      const pictCanvas = document.createElement('canvas')
-      pictCanvas.width = webcam.width
-      pictCanvas.height = webcam.height
 
-      const rendering = new Render(modelName, context, ringBuffre)
+      context.clearRect(0, 0, canvas.width, canvas.height)
+      // context.fillStyle = 'white'
+      // context.fillRect(0, 0, canvas.width, canvas.height)
+      // ピクトグラム用のcanvas
+      // const pictCanvas = document.createElement('canvas')
+      // pictCanvas.width = webcam.width
+      // pictCanvas.height = webcam.height
+
+      const rendering = new Render(
+        modelName,
+        context,
+        ringBuffre,
+        canvas.width,
+        canvas.height
+      )
       rendering.drawResult(predictions[0])
-      context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
+      // context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
       context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
+      if (isGame) {
+        const elapsedTime = Date.now() - startTime
+        rendering.drawGameUI(elapsedTime, pictogramList)
+      }
     })()
   }
 
@@ -234,7 +224,7 @@ export default function App() {
       />
       {stage === 'ready' && (
         <RecordButton
-          onClick={() => setStage('countdown')}
+          onClick={handleStartGame}
           style={{
             position: 'absolute',
             margin: 'auto',
@@ -245,21 +235,6 @@ export default function App() {
           }}
         />
       )}
-      {stage === 'countdown' && <CountDownView />}
-      {stage === 'checking' && (
-        <OlympicPictogram index={count} pictograms={pictogramList} size={200} />
-      )}
-      {stage === 'moving' && count < 7 && (
-        <>
-          <OlympicPictogram
-            index={count}
-            pictograms={pictogramList}
-            size={80}
-          />
-          <CountUpView current={count} max={6} />
-        </>
-      )}
-      {stage === 'focus' && <>{'forcus'}</>}
       {stage === 'share' && recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
