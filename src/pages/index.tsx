@@ -30,30 +30,11 @@ export default function App() {
 
   const getAudioTrack = () => {
     const audioContext = new AudioContext()
-    const t0 = audioContext.currentTime
-    let t = 0
-    const oscillator = audioContext.createOscillator()
-    const gain = audioContext.createGain()
-    oscillator.type = 'square'
-    ;[440, 480, 440, 480, 420, 500, 420, 500].forEach((s) => {
-      const vol = 1
-      const hz = s
-      const d = (60 / 80) * (4 / 4)
-      const sm = d / 3 > 0.08 ? 0.08 : Number((d / 3).toFixed(5))
-      oscillator.frequency.setValueAtTime(hz, t0 + t)
-      gain.gain.setValueCurveAtTime([vol * 0.03, vol * 0.025], t0 + t, sm)
-      gain.gain.setValueCurveAtTime(
-        [vol * 0.025, vol * 0.01],
-        t0 + t + d - sm,
-        sm
-      )
-      t += d
-    })
-    oscillator.start(t0)
-    oscillator.stop(t0 + t)
-    oscillator.connect(gain)
-    var dist = audioContext.createMediaStreamDestination()
-    gain.connect(dist)
+    const audioSource = audioContext.createMediaElementSource(
+      audioRef.current as HTMLMediaElement
+    )
+    const dist = audioContext.createMediaStreamDestination()
+    audioSource.connect(dist)
     return dist.stream.getTracks()[0]
   }
 
@@ -64,10 +45,9 @@ export default function App() {
     const ms = new MediaStream()
     ms.addTrack(canvasStream.getTracks()[0])
     ms.addTrack(getAudioTrack())
-    // mediaRecorderRef.current = new MediaRecorder(canvasStream, {
-    //   mimeType: isSafari ? 'video/webm' : 'video/webm',
-    // })
-    mediaRecorderRef.current = new MediaRecorder(ms)
+    mediaRecorderRef.current = new MediaRecorder(ms, {
+      mimeType: isSafari ? 'video/webm' : 'video/webm',
+    })
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
       handleDataAvailable
