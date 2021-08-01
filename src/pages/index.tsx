@@ -10,6 +10,7 @@ import {
   InputResolution,
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
+import { RingBuffer } from '../models/RingBuffer'
 import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
@@ -21,6 +22,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
+  const ringBuffre = new RingBuffer()
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
@@ -118,7 +120,8 @@ export default function App() {
         videoCanvas.height = videoHeight
         videoCanvasCtx.drawImage(video, 0, 0, videoWidth, videoHeight)
 
-        const rendering = new Render(modelName, picCanvasCtx)
+        const rendering = new Render(modelName, ctx, ringBuffre)
+
         requestAnimationFrame(() => {
           rendering.drawResult(predictions[0])
           ctx.drawImage(pictCanvas, 0, 0, videoWidth, videoHeight)
