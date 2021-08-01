@@ -326,7 +326,7 @@ export class Render {
       const count = Math.floor(elapsedTime / INTERVAL_TIME / 5)
       const index = Math.floor(elapsedTime / INTERVAL_TIME) % 5
       const splitTime = (elapsedTime % multi) / multi
-      if (index === 0) {
+      if (index < 2) {
         if (count < SPLIT_NUM + 1) {
           this.drawBigPictogramUI(count, pictograms)
         }
