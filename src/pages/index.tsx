@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react'
 import '@tensorflow/tfjs-core'
+import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
 import Webcam from 'react-webcam'
 import { Render } from '../models/render'
@@ -19,6 +20,14 @@ export default function App() {
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [net, setNet] = useState<PoseNet>()
+
+  useEffect(() => {
+    load().then((net: PoseNet) => {
+      setNet(net)
+      setIsLoaded(true)
+    })
+  }, [])
 
   const handleStartCaptureClick = useCallback(() => {
     const canvasStream = (canvasRef.current as any).captureStream(60)
@@ -55,70 +64,68 @@ export default function App() {
     facingMode: 'user',
   }
 
-  const runPoseDetect = async () => {
-    const model: PoseNet = await load()
-    detect(model)
-  }
-
-  const detect = async (detector: PoseNet) => {
+  const clickHandler = async () => {
     if (webcamRef.current && canvasRef.current) {
-      const webcamCurrent = webcamRef.current as any
-      // go next step only when the video is completely uploaded.
-      if (webcamCurrent.video.readyState === 4) {
-        setIsLoaded(true)
-        const video = webcamCurrent.video
-        const videoWidth = webcamCurrent.video.videoWidth
-        const videoHeight = webcamCurrent.video.videoHeight
-        video.width = videoWidth
-        video.height = videoHeight
+      const webcam = webcamRef.current.video as HTMLVideoElement
+      const canvas = canvasRef.current
 
-        canvasRef.current.width = videoWidth
-        canvasRef.current.height = videoHeight * 2
+      const videoWidth = webcam.videoWidth
+      const videoHeight = webcam.videoHeight
+      webcam.width = videoWidth
+      webcam.height = videoHeight
+      canvas.width = videoWidth
+      canvas.height = videoHeight * 2
 
-        const prediction = await detector.estimateSinglePose(video, {
-          flipHorizontal: false,
-        })
-
-        const ctx = canvasRef.current.getContext(
-          '2d'
-        ) as CanvasRenderingContext2D
-
-        // ピクトグラム用のcanvas
-        const pictCanvas = document.createElement('canvas')
-        pictCanvas.width = videoWidth
-        pictCanvas.height = videoHeight
-
-        // 動画用のcanvas
-        const videoCanvas = document.createElement('canvas')
-        const videoCanvasCtx = videoCanvas.getContext(
-          '2d'
-        ) as CanvasRenderingContext2D
-        videoCanvas.width = videoWidth
-        videoCanvas.height = videoHeight
-        videoCanvasCtx.drawImage(video, 0, 0, videoWidth, videoHeight)
-
-        const rendering = new Render(ctx, ringBuffre)
-
-        requestAnimationFrame(() => {
-          rendering.drawResult(prediction)
-          ctx.drawImage(pictCanvas, 0, 0, videoWidth, videoHeight)
-          ctx.drawImage(videoCanvas, 0, videoHeight, videoWidth, videoHeight)
-        })
-        await detect(detector)
-      } else {
-        setTimeout(() => {
-          detect(detector)
-        }, 100)
+      const context = canvas.getContext('2d')
+      if (net && context) {
+        drawimage(net, webcam, context, canvas)
       }
     }
   }
 
-  useEffect(() => {
-    runPoseDetect()
-  }, [])
+  const drawimage = async (
+    net: PoseNet,
+    webcam: HTMLVideoElement,
+    context: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement
+  ) => {
+    ;(async function drawMask() {
+      requestAnimationFrame(drawMask)
+      const prediction = await net.estimateSinglePose(webcam, {
+        flipHorizontal: false,
+      })
+      context.clearRect(0, 0, canvas.width, canvas.height)
+
+      // ピクトグラム用のcanvas
+      const pictCanvas = document.createElement('canvas')
+      pictCanvas.width = webcam.width
+      pictCanvas.height = webcam.height
+
+      // 動画用のcanvas
+      const videoCanvas = document.createElement('canvas')
+      const videoCanvasCtx = videoCanvas.getContext(
+        '2d'
+      ) as CanvasRenderingContext2D
+      videoCanvas.width = webcam.width
+      videoCanvas.height = webcam.height
+      videoCanvasCtx.drawImage(webcam, 0, 0, webcam.width, webcam.height)
+
+      const rendering = new Render(context, ringBuffre)
+      rendering.drawResult(prediction)
+      context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
+      context.drawImage(
+        videoCanvas,
+        0,
+        webcam.height,
+        webcam.width,
+        webcam.height
+      )
+    })()
+  }
 
   return (
     <div>
+      <button onClick={clickHandler}>ボタン</button>
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
