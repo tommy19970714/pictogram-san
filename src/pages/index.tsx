@@ -20,6 +20,7 @@ import Loader from '../components/Loader'
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
   const mediaRecorderRef = useRef<any>(null)
@@ -27,12 +28,34 @@ export default function App() {
   const { width, height } = useWindowDimensions()
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
 
+  const getAudioTrack = () => {
+    return new Promise<MediaStreamTrack>((resolve) => {
+      const audioContext = new AudioContext()
+      const audioElem = document.createElement('audio')
+      const source = document.createElement('source')
+      audioElem.appendChild(source)
+      source.src = '/pictogram-san_BGM.mp3'
+      source.type = 'audio/mp3'
+      audioElem.addEventListener('canplay', () => {
+        audioElem.play()
+        const audioSource = audioContext.createMediaElementSource(audioElem)
+        const dist = audioContext.createMediaStreamDestination()
+        audioSource.connect(dist)
+        resolve(dist.stream.getTracks()[0])
+      })
+    })
+  }
+
   useEffect(() => {
     handleStartDrawing()
   }, [])
 
-  const handleStartCaptureClick = useCallback(() => {
-    const canvasStream = (canvasRef.current as any).captureStream(60)
+  const handleStartCaptureClick = useCallback(async () => {
+    const canvasStream = (canvasRef.current as any).captureStream(
+      60
+    ) as MediaStream
+    const audio = audioRef.current
+    canvasStream.addTrack(await getAudioTrack())
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: isSafari ? 'video/mp4' : 'video/webm',
     })
@@ -41,10 +64,14 @@ export default function App() {
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
-    // とりあえず3秒後に止めるようにする
-    setTimeout(() => {
-      handleStopCaptureClick()
-    }, 3000)
+
+    if (audio) {
+      audio.play()
+      // 音楽が終了したら止める
+      audio.addEventListener('ended', function () {
+        handleStopCaptureClick()
+      })
+    }
   }, [webcamRef, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
@@ -57,6 +84,9 @@ export default function App() {
   )
 
   const handleStopCaptureClick = useCallback(() => {
+    const audio = audioRef.current
+    if (audio) audio.pause()
+    console.log(mediaRecorderRef?.current)
     mediaRecorderRef?.current?.stop()
   }, [mediaRecorderRef, webcamRef, recordedChunks])
 
@@ -91,8 +121,10 @@ export default function App() {
       setIsLoaded(true)
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-      webcam.width = canvas.width = webcam.videoWidth
-      webcam.height = canvas.height = webcam.videoHeight
+      webcam.width = webcam.videoWidth
+      webcam.height = webcam.videoHeight
+      canvas.width = webcam.videoWidth
+      canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
       if (context) {
         drawimage(net, webcam, context, canvas)
@@ -113,7 +145,8 @@ export default function App() {
         flipHorizontal: false,
       })
       context.clearRect(0, 0, canvas.width, canvas.height)
-
+      context.fillStyle = 'white'
+      context.fillRect(0, 0, canvas.width, canvas.height)
       // ピクトグラム用のcanvas
       const pictCanvas = document.createElement('canvas')
       pictCanvas.width = webcam.width
@@ -128,6 +161,9 @@ export default function App() {
 
   return (
     <div>
+      <audio ref={audioRef} preload="true">
+        <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
+      </audio>
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
@@ -166,6 +202,7 @@ export default function App() {
       {recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
+      <button onClick={handleStopCaptureClick}>停止（仮）</button>
       {!isLoaded && <Loader />}
     </div>
   )
