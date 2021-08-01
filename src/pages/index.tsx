@@ -29,27 +29,35 @@ export default function App() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
 
   const getAudioTrack = () => {
-    const audioContext = new AudioContext()
-    const audioSource = audioContext.createMediaElementSource(
-      audioRef.current as HTMLMediaElement
-    )
-    const dist = audioContext.createMediaStreamDestination()
-    audioSource.connect(dist)
-    return dist.stream.getTracks()[0]
+    return new Promise<MediaStreamTrack>((resolve) => {
+      const audioContext = new AudioContext()
+      const audioElem = document.createElement('audio')
+      const source = document.createElement('source')
+      audioElem.appendChild(source)
+      source.src = './pictogram-san_BGM.mp3'
+      source.type = 'audio/mp3'
+      audioElem.addEventListener('canplay', () => {
+        audioElem.play()
+        const audioSource = audioContext.createMediaElementSource(audioElem)
+        const dist = audioContext.createMediaStreamDestination()
+        audioSource.connect(dist)
+        resolve(dist.stream.getTracks()[0])
+      })
+    })
   }
+
   useEffect(() => {
     handleStartDrawing()
   }, [])
 
-  const handleStartCaptureClick = useCallback(() => {
-    const canvasStream = (canvasRef.current as any).captureStream(60)
+  const handleStartCaptureClick = useCallback(async () => {
+    const canvasStream = (canvasRef.current as any).captureStream(
+      60
+    ) as MediaStream
     const audio = audioRef.current
-
-    const ms = new MediaStream()
-    ms.addTrack(canvasStream.getTracks()[0])
-    ms.addTrack(getAudioTrack())
-    mediaRecorderRef.current = new MediaRecorder(ms, {
-      mimeType: isSafari ? 'video/mp4' : 'video/webm',
+    canvasStream.addTrack(await getAudioTrack())
+    mediaRecorderRef.current = new MediaRecorder(canvasStream, {
+      mimeType: isSafari ? 'video/webm' : 'video/webm',
     })
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
@@ -78,6 +86,7 @@ export default function App() {
   const handleStopCaptureClick = useCallback(() => {
     const audio = audioRef.current
     if (audio) audio.pause()
+    console.log(mediaRecorderRef?.current)
     mediaRecorderRef?.current?.stop()
   }, [mediaRecorderRef, webcamRef, recordedChunks])
 
@@ -136,7 +145,8 @@ export default function App() {
         flipHorizontal: false,
       })
       context.clearRect(0, 0, canvas.width, canvas.height)
-
+      context.fillStyle = 'white'
+      context.fillRect(0, 0, canvas.width, canvas.height)
       // ピクトグラム用のcanvas
       const pictCanvas = document.createElement('canvas')
       pictCanvas.width = webcam.width
