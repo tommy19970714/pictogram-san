@@ -9,7 +9,7 @@ export const PhotoPreview = (props: { png: string; clickTry: () => void }) => {
     const downloadLink = document.createElement('a')
     if (typeof downloadLink.download === 'string') {
       downloadLink.href = png
-      downloadLink.download = 'pictogram-san-challenge.png'
+      downloadLink.download = 'pictogram-challenge.png'
       document.body.appendChild(downloadLink)
       downloadLink.click()
       document.body.removeChild(downloadLink)
