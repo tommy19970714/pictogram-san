@@ -81,14 +81,12 @@ export default function App() {
     if (webcamRef.current && canvasRef.current) {
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-
       const videoWidth = webcam.videoWidth
       const videoHeight = webcam.videoHeight
       webcam.width = videoWidth
       webcam.height = videoHeight
       canvas.width = videoWidth
-      canvas.height = videoHeight * 2
-
+      canvas.height = videoHeight
       const context = canvas.getContext('2d')
       if (net && context) {
         drawimage(net, webcam, context, canvas)
@@ -115,25 +113,10 @@ export default function App() {
       pictCanvas.width = webcam.width
       pictCanvas.height = webcam.height
 
-      // 動画用のcanvas
-      const videoCanvas = document.createElement('canvas')
-      const videoCanvasCtx = videoCanvas.getContext(
-        '2d'
-      ) as CanvasRenderingContext2D
-      videoCanvas.width = webcam.width
-      videoCanvas.height = webcam.height
-      videoCanvasCtx.drawImage(webcam, 0, 0, webcam.width, webcam.height)
-
       const rendering = new Render(modelName, context, ringBuffre)
       rendering.drawResult(predictions[0])
       context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
-      context.drawImage(
-        videoCanvas,
-        0,
-        webcam.height,
-        webcam.width,
-        webcam.height
-      )
+      context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
     })()
   }
 
@@ -145,7 +128,12 @@ export default function App() {
         videoConstraints={videoConstraints}
         ref={webcamRef}
         style={{
-          display: 'none',
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
         }}
       />
       <canvas
