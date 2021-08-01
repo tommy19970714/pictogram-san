@@ -28,7 +28,7 @@ export default function App() {
   const handleStartCaptureClick = useCallback(() => {
     const canvasStream = (canvasRef.current as any).captureStream(60)
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
-      mimeType: isSafari ? 'video/mp4' : 'video/webm;codecs=vp6',
+      mimeType: isSafari ? 'video/mp4' : 'video/webm',
     })
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
