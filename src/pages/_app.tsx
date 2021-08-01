@@ -11,6 +11,23 @@ function MyApp({ Component, pageProps }: AppProps) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, maximum-scale=1, width=device-width"
         />
+        <meta
+          name="description"
+          content="AIのちからでTOKYOオリンピックのピクトグラムさんになれるアプリ"
+        />
+        <meta
+          name="keywords"
+          content="pictogram-san, pictogram challenge, ピクトグラムさん, ピクトグラムチャレンジ"
+        />
+        <meta property="og:url" content="https://pictogram-san.com/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Pictogram Challenge" />
+        <meta
+          property="og:description"
+          content="AIのちからでTOKYOオリンピックのピクトグラムさんになれるアプリ"
+        />
+        <meta property="og:site_name" content="Pictogram Challenge" />
+        <meta property="og:image" content="https://pictogram-san/ogp.png" />
         <title>Pictogram Challenge</title>
         <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css"></link>
       </Head>
