@@ -1,14 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react'
 import '@tensorflow/tfjs-core'
-import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
 import Webcam from 'react-webcam'
-import {
-  createDetector,
-  PoseDetector,
-  SupportedModels,
-  InputResolution,
-} from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
 import { RingBuffer } from '../models/RingBuffer'
 import { isSafari } from 'react-device-detect'
@@ -16,11 +9,11 @@ import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
+import { PoseNet, load } from '@tensorflow-models/posenet'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
@@ -63,18 +56,11 @@ export default function App() {
   }
 
   const runPoseDetect = async () => {
-    const resolution: InputResolution = { width: 500, height: 500 }
-    const detector = await createDetector(modelName, {
-      quantBytes: 4,
-      architecture: 'MobileNetV1',
-      outputStride: 16,
-      inputResolution: resolution,
-      multiplier: 0.75,
-    })
-    detect(detector)
+    const model: PoseNet = await load()
+    detect(model)
   }
 
-  const detect = async (detector: PoseDetector) => {
+  const detect = async (detector: PoseNet) => {
     if (webcamRef.current && canvasRef.current) {
       const webcamCurrent = webcamRef.current as any
       // go next step only when the video is completely uploaded.
@@ -89,8 +75,7 @@ export default function App() {
         canvasRef.current.width = videoWidth
         canvasRef.current.height = videoHeight * 2
 
-        const predictions = await detector.estimatePoses(video, {
-          maxPoses: 1,
+        const prediction = await detector.estimateSinglePose(video, {
           flipHorizontal: false,
         })
 
@@ -112,10 +97,10 @@ export default function App() {
         videoCanvas.height = videoHeight
         videoCanvasCtx.drawImage(video, 0, 0, videoWidth, videoHeight)
 
-        const rendering = new Render(modelName, ctx, ringBuffre)
+        const rendering = new Render(ctx, ringBuffre)
 
         requestAnimationFrame(() => {
-          rendering.drawResult(predictions[0])
+          rendering.drawResult(prediction)
           ctx.drawImage(pictCanvas, 0, 0, videoWidth, videoHeight)
           ctx.drawImage(videoCanvas, 0, videoHeight, videoWidth, videoHeight)
         })
