@@ -58,6 +58,8 @@ export default function App() {
   )
 
   const handleStopCaptureClick = useCallback(() => {
+    const audio = audioRef.current
+    if (audio) audio.pause()
     mediaRecorderRef?.current?.stop()
   }, [mediaRecorderRef, webcamRef, recordedChunks])
 
@@ -178,6 +180,7 @@ export default function App() {
       {recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
+      <button onClick={handleStopCaptureClick}>停止（仮）</button>
       {!isLoaded && <Loader />}
     </div>
   )
