@@ -1,6 +1,3 @@
-import React from 'react'
-import styled from 'styled-components'
-
 export const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   '3x3_Basketball.svg',
   'Rugby.svg',
@@ -36,26 +33,3 @@ export const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   'kata.svg',
   'Rhythmic.svg',
 ]
-
-const PictogramImage = styled.img<{ size: number }>`
-  width: ${(props) => props.size}px;
-  height: ${(props) => props.size}px;
-`
-
-const OlympicPictogram = (props: {
-  index: number
-  pictograms: string[]
-  size: number
-}) => {
-  const { index } = props
-  return (
-    <div>
-      <PictogramImage
-        src={'/pictograms/' + props.pictograms[index]}
-        size={props.size}
-      />
-    </div>
-  )
-}
-
-export default OlympicPictogram
