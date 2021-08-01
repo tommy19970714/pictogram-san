@@ -101,13 +101,12 @@ export default function App() {
   }
 
   const handleStartDrawing = async (isGame: boolean) => {
-    const resolution: InputResolution = { width: 500, height: 500 }
+    const resolution: InputResolution = { width: 128, height: 128 }
     const net = await createDetector(modelName, {
-      quantBytes: 4,
-      architecture: 'MobileNetV1',
+      quantBytes: 2, // 4
+      architecture: 'ResNet50', // 'MobileNetV1'
       outputStride: 16,
       inputResolution: resolution,
-      multiplier: 0.75,
     })
     await handleLoadWaiting()
     if (webcamRef.current && canvasRef.current && net) {
