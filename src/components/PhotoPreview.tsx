@@ -1,5 +1,6 @@
 import React from 'react'
-import { DefaultButton, PinkButton } from '../components/Buttons'
+import Link from 'next/link'
+import { DefaultButton, PinkButton, BlueButton } from '../components/Buttons'
 
 export const PhotoPreview = (props: { png: string; clickTry: () => void }) => {
   const { png, clickTry } = props
@@ -59,6 +60,23 @@ export const PhotoPreview = (props: { png: string; clickTry: () => void }) => {
         <PinkButton onClick={clickTry}>Try again</PinkButton>
         <DefaultButton onClick={saveAsImage}>Save Photo</DefaultButton>
       </div>
+      <Link
+        href={
+          'https://twitter.com/intent/tweet?text=' +
+          'ピクトグラムチャレンジやってみた！%0D%0A↓フォロワーにリレーをつないでオリンピックを盛り上げよう！%0D%0A' +
+          '&hashtags=PictogramChallenge' +
+          '&url=https://pictogram-san.com'
+        }
+        passHref
+      >
+        <BlueButton
+          style={{
+            marginTop: '10px',
+          }}
+        >
+          Tweet
+        </BlueButton>
+      </Link>
     </div>
   )
 }
