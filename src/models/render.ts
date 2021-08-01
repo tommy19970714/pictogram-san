@@ -1,11 +1,8 @@
 // ref: https://github.com/tensorflow/tfjs-models/blob/master/pose-detection/demos/live_video/src/camera.js
 
 import * as posedetection from '@tensorflow-models/pose-detection'
-import {
-  SupportedModels,
-  Keypoint,
-  Pose,
-} from '@tensorflow-models/pose-detection'
+import { Keypoint, Pose } from '@tensorflow-models/posenet'
+import { SupportedModels } from '@tensorflow-models/pose-detection'
 import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
 import { RingBuffer } from './RingBuffer'
 
@@ -19,18 +16,10 @@ export const DEFAULT_RADIUS = 4
 
 export class Render {
   ctx: CanvasRenderingContext2D
-  modelName: SupportedModels
-  modelConfig: any
   ringBuffer: RingBuffer
 
-  constructor(
-    model: SupportedModels,
-    context: CanvasRenderingContext2D,
-    ringBuffer: RingBuffer
-  ) {
-    this.modelName = model
+  constructor(context: CanvasRenderingContext2D, ringBuffer: RingBuffer) {
     this.ctx = context
-    this.modelConfig = { ...POSENET_CONFIG }
     this.ringBuffer = ringBuffer
   }
 
@@ -51,7 +40,7 @@ export class Render {
    */
   drawKeypoints(keypoints: Keypoint[]) {
     const keypointInd = posedetection.util.getKeypointIndexBySide(
-      this.modelName
+      SupportedModels.PoseNet
     )
     this.ctx.fillStyle = 'White'
     this.ctx.strokeStyle = 'White'
@@ -75,11 +64,17 @@ export class Render {
   drawKeypoint(keypoint: Keypoint) {
     // If score is null, just show the keypoint.
     const score = keypoint.score != null ? keypoint.score : 1
-    const scoreThreshold = this.modelConfig.scoreThreshold || 0
+    const scoreThreshold = POSENET_CONFIG.scoreThreshold || 0
 
     if (score >= scoreThreshold) {
       const circle = new Path2D()
-      circle.arc(keypoint.x, keypoint.y, DEFAULT_RADIUS, 0, 2 * Math.PI)
+      circle.arc(
+        keypoint.position.x,
+        keypoint.position.y,
+        DEFAULT_RADIUS,
+        0,
+        2 * Math.PI
+      )
       this.ctx.fill(circle)
       this.ctx.stroke(circle)
     }
@@ -94,22 +89,24 @@ export class Render {
     this.ctx.strokeStyle = 'White'
     this.ctx.lineWidth = DEFAULT_LINE_WIDTH
 
-    posedetection.util.getAdjacentPairs(this.modelName).forEach(([i, j]) => {
-      const kp1 = keypoints[i]
-      const kp2 = keypoints[j]
+    posedetection.util
+      .getAdjacentPairs(SupportedModels.PoseNet)
+      .forEach(([i, j]) => {
+        const kp1 = keypoints[i]
+        const kp2 = keypoints[j]
 
-      // If score is null, just show the keypoint.
-      const score1 = kp1.score != null ? kp1.score : 1
-      const score2 = kp2.score != null ? kp2.score : 1
-      const scoreThreshold = this.modelConfig.scoreThreshold || 0
+        // If score is null, just show the keypoint.
+        const score1 = kp1.score != null ? kp1.score : 1
+        const score2 = kp2.score != null ? kp2.score : 1
+        const scoreThreshold = POSENET_CONFIG.scoreThreshold || 0
 
-      if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
-        this.ctx.beginPath()
-        this.ctx.moveTo(kp1.x, kp1.y)
-        this.ctx.lineTo(kp2.x, kp2.y)
-        this.ctx.stroke()
-      }
-    })
+        if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
+          this.ctx.beginPath()
+          this.ctx.moveTo(kp1.position.x, kp1.position.y)
+          this.ctx.lineTo(kp2.position.x, kp2.position.y)
+          this.ctx.stroke()
+        }
+      })
   }
 
   drawStickFigure(keypoints: Keypoint[]) {
@@ -120,12 +117,12 @@ export class Render {
 
     const faceCenter = this.getFaceCenter(currentKP)
     const leftNose2Ear = Math.hypot(
-      currentKP[1].x - currentKP[0].x,
-      currentKP[1].y - currentKP[0].y
+      currentKP[1].position.x - currentKP[0].position.x,
+      currentKP[1].position.y - currentKP[0].position.y
     )
     const rightNose2Ear = Math.hypot(
-      currentKP[0].x - currentKP[2].x,
-      currentKP[0].y - currentKP[2].y
+      currentKP[0].position.x - currentKP[2].position.x,
+      currentKP[0].position.y - currentKP[2].position.y
     )
     const faceRadius = Math.max(leftNose2Ear, rightNose2Ear) * 2
     const stickRadius1 = faceRadius * 0.6
@@ -140,9 +137,9 @@ export class Render {
     // 手足
     const rootAry = [5, 11] // 肩, 腰
     rootAry.forEach((i) => {
-      const isLeft1 = currentKP[i].x < currentKP[i + 1].x
-      const isLeft2 = currentKP[i + 2].x < currentKP[i + 3].x
-      const isLeft3 = currentKP[i + 4].x < currentKP[i + 5].x
+      const isLeft1 = currentKP[i].position.x < currentKP[i + 1].position.x
+      const isLeft2 = currentKP[i + 2].position.x < currentKP[i + 3].position.x
+      const isLeft3 = currentKP[i + 4].position.x < currentKP[i + 5].position.x
       const point1L = isLeft1 ? currentKP[i] : currentKP[i + 1]
       const point1R = isLeft1 ? currentKP[i + 1] : currentKP[i]
       const point2L = isLeft2 ? currentKP[i + 2] : currentKP[i + 3]
@@ -175,22 +172,25 @@ export class Render {
     point2: Keypoint,
     point2Radius: number
   ) {
-    this.drawCircle(point1, point1Radius)
-    this.drawCircle(point2, point2Radius)
+    this.drawCircle(point1.position, point1Radius)
+    this.drawCircle(point2.position, point2Radius)
 
     const drawList: Vector2D[] = []
     ;[0, 1].forEach((index) => {
       const rad =
-        Math.atan2(point2.y - point1.y, point2.x - point1.x) +
+        Math.atan2(
+          point2.position.y - point1.position.y,
+          point2.position.x - point1.position.x
+        ) +
         Math.PI / 2 +
         Math.PI * index
 
-      const point1X = point1Radius * Math.cos(rad) + point1.x
-      const point1Y = point1Radius * Math.sin(rad) + point1.y
+      const point1X = point1Radius * Math.cos(rad) + point1.position.x
+      const point1Y = point1Radius * Math.sin(rad) + point1.position.y
       drawList.push({ x: point1X, y: point1Y })
 
-      const point2X = point2Radius * Math.cos(rad) + point2.x
-      const point2Y = point2Radius * Math.sin(rad) + point2.y
+      const point2X = point2Radius * Math.cos(rad) + point2.position.x
+      const point2Y = point2Radius * Math.sin(rad) + point2.position.y
       drawList.push({ x: point2X, y: point2Y })
     })
 
@@ -221,11 +221,11 @@ export class Render {
       'right_ear',
     ]
     keypoints
-      .filter((point) => point.name && facePointNames.includes(point.name))
+      .filter((point) => point.part && facePointNames.includes(point.part))
       .forEach((point) => {
         if (point.score && point.score > POSENET_CONFIG.scoreThreshold) {
-          sumX += point.x
-          sumY += point.y
+          sumX += point.position.x
+          sumY += point.position.y
           count += 1
         }
       })

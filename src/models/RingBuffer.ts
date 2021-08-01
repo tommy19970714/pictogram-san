@@ -1,4 +1,4 @@
-import { Keypoint } from '@tensorflow-models/pose-detection'
+import { Keypoint } from '@tensorflow-models/posenet'
 
 export class RingBuffer {
   bit: number = 3
@@ -14,7 +14,7 @@ export class RingBuffer {
     this.sumArray = new Array(17)
     this.mask = (1 << 3) - 1
     for (let i = 0; i < 17; i++) {
-      this.sumArray[i] = { x: 0, y: 0, score: 0, name: '' }
+      this.sumArray[i] = { position: { x: 0, y: 0 }, score: 0, part: '' }
     }
   }
 
@@ -25,8 +25,8 @@ export class RingBuffer {
         const temp = this.sumArray[i].score || 0
         this.sumArray[i].score =
           temp - (this.ringBuffer[this.idx][i].score || 0)
-        this.sumArray[i].x -= this.ringBuffer[this.idx][i].x
-        this.sumArray[i].y -= this.ringBuffer[this.idx][i].y
+        this.sumArray[i].position.x -= this.ringBuffer[this.idx][i].position.x
+        this.sumArray[i].position.y -= this.ringBuffer[this.idx][i].position.y
       }
     } else {
       this.count += 1
@@ -37,9 +37,9 @@ export class RingBuffer {
     for (let i = 0; i < 17; i++) {
       const temp = this.sumArray[i].score || 0
       this.sumArray[i].score = temp + (this.ringBuffer[this.idx][i].score || 0)
-      this.sumArray[i].name = this.ringBuffer[this.idx][i].name
-      this.sumArray[i].x += this.ringBuffer[this.idx][i].x
-      this.sumArray[i].y += this.ringBuffer[this.idx][i].y
+      this.sumArray[i].part = this.ringBuffer[this.idx][i].part
+      this.sumArray[i].position.x += this.ringBuffer[this.idx][i].position.x
+      this.sumArray[i].position.y += this.ringBuffer[this.idx][i].position.y
     }
 
     this.idx = (this.idx + 1) & this.mask
@@ -54,10 +54,12 @@ export class RingBuffer {
     const rval: Keypoint[] = []
     this.sumArray.forEach((point) => {
       rval.push({
-        x: point.x / this.count,
-        y: point.y / this.count,
+        position: {
+          x: point.position.x / this.count,
+          y: point.position.y / this.count,
+        },
         score: point.score && point.score / this.count,
-        name: point.name,
+        part: point.part,
       })
     })
     return rval
