@@ -58,6 +58,7 @@ export default function App() {
     const audio = audioRef.current
     if (audio) {
       audio.muted = true
+      audio.currentTime = 0
       audio.play()
       audio.pause()
       audio.muted = false
@@ -154,8 +155,9 @@ export default function App() {
       )
       rendering.drawResult(predictions[0])
       context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
-      if (isGame) {
-        const elapsedTime = Date.now() - startTime
+
+      const elapsedTime = Date.now() - startTime
+      if (isGame && elapsedTime < 31000) {
         rendering.drawGameUI(elapsedTime, pictogramList)
         if (elapsedTime > 26000 && elapsedTime < 27000) {
           const pngURL = canvas.toDataURL('image/png')
