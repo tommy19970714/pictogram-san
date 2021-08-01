@@ -16,9 +16,12 @@ import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
+import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton } from '../components/Buttons'
 import Modal from '../components/Modal'
 import { SmallText } from '../styles/TopPage'
+
+type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -29,7 +32,11 @@ export default function App() {
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
-  const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [stage, setStage] = useState<Stage>('loading')
+  const [animationFrameId, setAnimationFrameId] = useState<number>()
+  const [pictogramList, setPictogramList] = useState<string[]>(
+    OLYMPIC_PICTOGRAMS_SVGS
+  )
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
 
   const getAudioTrack = () => {
@@ -51,11 +58,24 @@ export default function App() {
   }
 
   useEffect(() => {
-    handleStartDrawing()
+    setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
+    handleStartDrawing(false)
   }, [])
+
+  const handleStartGame = () => {
+    setStage('moving')
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+      handleStartDrawing(true)
+    }
+    setTimeout(() => {
+      handleStartCapture()
+    }, 3200)
+  }
 
   const handleRecordButtonClick = () => {
     setIsOpenModal(true)
+    setStage('moving')
     const audio = audioRef.current
     if (audio) {
       audio.muted = true
@@ -68,8 +88,9 @@ export default function App() {
 
   const handleStartClick = () => {
     setIsOpenModal(false)
-    handleStartCaptureClick()
+    handleStartCapture()
     audioPlay()
+    handleStartGame()
   }
 
   const audioPlay = () => {
@@ -78,13 +99,13 @@ export default function App() {
       audio.play()
       // 音楽が終了したら止める
       audio.addEventListener('ended', function () {
-        handleStopCaptureClick()
+        handleStopCapture()
       })
     }
   }
 
   // ビデオ録画開始
-  const handleStartCaptureClick = useCallback(async () => {
+  const handleStartCapture = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
     ) as MediaStream
@@ -108,12 +129,11 @@ export default function App() {
     [setRecordedChunks]
   )
 
-  // ビデオ録画止める
-  const handleStopCaptureClick = useCallback(() => {
+  const handleStopCapture = useCallback(() => {
     const audio = audioRef.current
     if (audio) audio.pause()
-    console.log(mediaRecorderRef?.current)
     mediaRecorderRef?.current?.stop()
+    setStage('share')
   }, [mediaRecorderRef, webcamRef, recordedChunks])
 
   const videoConstraints = {
@@ -133,7 +153,7 @@ export default function App() {
     })
   }
 
-  const handleStartDrawing = async () => {
+  const handleStartDrawing = async (isGame: boolean) => {
     const resolution: InputResolution = { width: 500, height: 500 }
     const net = await createDetector(modelName, {
       quantBytes: 4,
@@ -144,7 +164,7 @@ export default function App() {
     })
     await handleLoadWaiting()
     if (webcamRef.current && canvasRef.current && net) {
-      setIsLoaded(true)
+      setStage('ready')
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
@@ -153,7 +173,7 @@ export default function App() {
       canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
       if (context) {
-        drawimage(net, webcam, context, canvas)
+        drawimage(net, webcam, context, canvas, isGame)
       }
     }
   }
@@ -162,26 +182,36 @@ export default function App() {
     net: PoseDetector,
     webcam: HTMLVideoElement,
     context: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement
+    canvas: HTMLCanvasElement,
+    isGame: boolean
   ) => {
+    const startTime = Date.now()
     ;(async function drawMask() {
-      requestAnimationFrame(drawMask)
+      const id = requestAnimationFrame(drawMask)
+      setAnimationFrameId(id)
+
       const predictions = await net.estimatePoses(webcam, {
         maxPoses: 1,
         flipHorizontal: false,
       })
+
       context.clearRect(0, 0, canvas.width, canvas.height)
       context.fillStyle = 'white'
       context.fillRect(0, 0, canvas.width, canvas.height)
-      // ピクトグラム用のcanvas
-      const pictCanvas = document.createElement('canvas')
-      pictCanvas.width = webcam.width
-      pictCanvas.height = webcam.height
 
-      const rendering = new Render(modelName, context, ringBuffre)
+      const rendering = new Render(
+        modelName,
+        context,
+        ringBuffre,
+        canvas.width,
+        canvas.height
+      )
       rendering.drawResult(predictions[0])
-      context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
       context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
+      if (isGame) {
+        const elapsedTime = Date.now() - startTime
+        rendering.drawGameUI(elapsedTime, pictogramList)
+      }
     })()
   }
 
@@ -214,17 +244,19 @@ export default function App() {
           right: 0,
         }}
       />
-      <RecordButton
-        onClick={handleRecordButtonClick}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
+      {stage === 'ready' && (
+        <RecordButton
+          onClick={handleRecordButtonClick}
+          style={{
+            position: 'absolute',
+            margin: 'auto',
+            textAlign: 'center',
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+      )}
       {isOpenModal && (
         <Modal closeModal={() => setIsOpenModal(false)}>
           <SmallText> This app has audio</SmallText>
@@ -237,11 +269,10 @@ export default function App() {
           <DefaultButton onClick={handleStartClick}>OK</DefaultButton>
         </Modal>
       )}
-      {recordedChunks.length > 0 && (
+      {stage === 'share' && recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
-      <button onClick={handleStopCaptureClick}>停止（仮）</button>
-      {!isLoaded && <Loader />}
+      {stage === 'loading' && <Loader />}
     </div>
   )
 }

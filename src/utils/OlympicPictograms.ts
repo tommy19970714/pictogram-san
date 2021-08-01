@@ -1,7 +1,4 @@
-import React from 'react'
-import styled from 'styled-components'
-
-const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
+export const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   '3x3_Basketball.svg',
   'Rugby.svg',
   'Archery.svg',
@@ -36,21 +33,3 @@ const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   'kata.svg',
   'Rhythmic.svg',
 ]
-
-const PictogramImage = styled.img`
-  width: 80px;
-  height: 80px;
-`
-
-const OlympicPictogram = (props: { index: number }) => {
-  const { index } = props
-  const pictogramList = OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random())
-
-  return (
-    <div>
-      <PictogramImage src={'/pictograms/' + pictogramList[index]} />
-    </div>
-  )
-}
-
-export default OlympicPictogram
