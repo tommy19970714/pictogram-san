@@ -30,7 +30,6 @@ export class RingBuffer {
       }
     } else {
       this.count += 1
-      console.log('count up', this.count)
     }
 
     this.ringBuffer[this.idx] = keypoints.slice(0, 17)
