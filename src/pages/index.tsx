@@ -16,6 +16,9 @@ import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
+import { DefaultButton } from '../components/Buttons'
+import Modal from '../components/Modal'
+import { SmallText } from '../styles/TopPage'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -27,6 +30,7 @@ export default function App() {
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
 
   const getAudioTrack = () => {
     return new Promise<MediaStreamTrack>((resolve) => {
@@ -50,6 +54,36 @@ export default function App() {
     handleStartDrawing()
   }, [])
 
+  const handleRecordButtonClick = () => {
+    setIsOpenModal(true)
+    const audio = audioRef.current
+    if (audio) {
+      audio.muted = true
+      audio.play()
+      audio.pause()
+      audio.muted = false
+      audio.currentTime = 0
+    }
+  }
+
+  const handleStartClick = () => {
+    setIsOpenModal(false)
+    handleStartCaptureClick()
+    audioPlay()
+  }
+
+  const audioPlay = () => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.play()
+      // 音楽が終了したら止める
+      audio.addEventListener('ended', function () {
+        handleStopCaptureClick()
+      })
+    }
+  }
+
+  // ビデオ録画開始
   const handleStartCaptureClick = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
@@ -64,14 +98,6 @@ export default function App() {
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
-
-    if (audio) {
-      audio.play()
-      // 音楽が終了したら止める
-      audio.addEventListener('ended', function () {
-        handleStopCaptureClick()
-      })
-    }
   }, [webcamRef, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
@@ -83,6 +109,7 @@ export default function App() {
     [setRecordedChunks]
   )
 
+  // ビデオ録画止める
   const handleStopCaptureClick = useCallback(() => {
     const audio = audioRef.current
     if (audio) audio.pause()
@@ -189,7 +216,7 @@ export default function App() {
         }}
       />
       <RecordButton
-        onClick={handleStartCaptureClick}
+        onClick={handleRecordButtonClick}
         style={{
           position: 'absolute',
           margin: 'auto',
@@ -199,6 +226,18 @@ export default function App() {
           right: 0,
         }}
       />
+      {isOpenModal && (
+        <Modal closeModal={() => setIsOpenModal(false)}>
+          <SmallText> This app has audio</SmallText>
+          <img
+            src="/svgs/audio-icon.svg"
+            alt="audio"
+            width={100}
+            height={100}
+          />
+          <DefaultButton onClick={handleStartClick}>OK</DefaultButton>
+        </Modal>
+      )}
       {recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
