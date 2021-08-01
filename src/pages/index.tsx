@@ -272,7 +272,6 @@ export default function App() {
       {stage === 'share' && recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
-      <button onClick={handleStopCapture}>停止（仮）</button>
       {stage === 'loading' && <Loader />}
     </div>
   )
