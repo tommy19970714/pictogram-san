@@ -17,6 +17,9 @@ import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
 import { OLYMPIC_PICTOGRAMS_SVGS } from '../components/OlympicPictogram'
+import { DefaultButton } from '../components/Buttons'
+import Modal from '../components/Modal'
+import { SmallText } from '../styles/TopPage'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
@@ -34,6 +37,7 @@ export default function App() {
   const [pictogramList, setPictogramList] = useState<string[]>(
     OLYMPIC_PICTOGRAMS_SVGS
   )
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
 
   const getAudioTrack = () => {
     return new Promise<MediaStreamTrack>((resolve) => {
@@ -58,22 +62,41 @@ export default function App() {
     handleStartDrawing(false)
   }, [])
 
-  const handleStartGame = () => {
+  const handleRecordButton = () => {
+    setIsOpenModal(true)
     setStage('moving')
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId)
-      handleStartDrawing(true)
+    const audio = audioRef.current
+    if (audio) {
+      audio.muted = true
+      audio.play()
+      audio.pause()
+      audio.muted = false
+      audio.currentTime = 0
     }
-    setTimeout(() => {
-      handleStartCapture()
-    }, 3000)
   }
 
-  const handleStartCapture = useCallback(async () => {
+  const handleStartClick = () => {
+    setIsOpenModal(false)
+    handleStartCaptureClick()
+    audioPlay()
+  }
+
+  const audioPlay = () => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.play()
+      // 音楽が終了したら止める
+      audio.addEventListener('ended', function () {
+        handleStopCapture()
+      })
+    }
+  }
+
+  // ビデオ録画開始
+  const handleStartCaptureClick = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
     ) as MediaStream
-    const audio = audioRef.current
     canvasStream.addTrack(await getAudioTrack())
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
       mimeType: isSafari ? 'video/mp4' : 'video/webm',
@@ -83,14 +106,6 @@ export default function App() {
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
-
-    if (audio) {
-      audio.play()
-      // 音楽が終了したら止める
-      audio.addEventListener('ended', function () {
-        handleStopCapture()
-      })
-    }
   }, [webcamRef, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
@@ -234,6 +249,18 @@ export default function App() {
             right: 0,
           }}
         />
+      )}
+      {isOpenModal && (
+        <Modal closeModal={() => setIsOpenModal(false)}>
+          <SmallText> This app has audio</SmallText>
+          <img
+            src="/svgs/audio-icon.svg"
+            alt="audio"
+            width={100}
+            height={100}
+          />
+          <DefaultButton onClick={handleStartClick}>OK</DefaultButton>
+        </Modal>
       )}
       {stage === 'share' && recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
