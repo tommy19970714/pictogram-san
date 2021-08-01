@@ -34,7 +34,7 @@ export default function App() {
       const audioElem = document.createElement('audio')
       const source = document.createElement('source')
       audioElem.appendChild(source)
-      source.src = './pictogram-san_BGM.mp3'
+      source.src = '/pictogram-san_BGM.mp3'
       source.type = 'audio/mp3'
       audioElem.addEventListener('canplay', () => {
         audioElem.play()
