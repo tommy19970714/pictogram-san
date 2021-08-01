@@ -70,7 +70,7 @@ export default function App() {
     }
     setTimeout(() => {
       handleStartCapture()
-    }, 3000)
+    }, 3200)
   }
 
   const handleRecordButtonClick = () => {
@@ -196,12 +196,8 @@ export default function App() {
       })
 
       context.clearRect(0, 0, canvas.width, canvas.height)
-      // context.fillStyle = 'white'
-      // context.fillRect(0, 0, canvas.width, canvas.height)
-      // ピクトグラム用のcanvas
-      // const pictCanvas = document.createElement('canvas')
-      // pictCanvas.width = webcam.width
-      // pictCanvas.height = webcam.height
+      context.fillStyle = 'white'
+      context.fillRect(0, 0, canvas.width, canvas.height)
 
       const rendering = new Render(
         modelName,
@@ -211,7 +207,6 @@ export default function App() {
         canvas.height
       )
       rendering.drawResult(predictions[0])
-      // context.drawImage(pictCanvas, 0, 0, webcam.width, webcam.height)
       context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
       if (isGame) {
         const elapsedTime = Date.now() - startTime
