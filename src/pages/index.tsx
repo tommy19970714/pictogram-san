@@ -37,11 +37,13 @@ export default function App() {
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
-    if (audio) audio.play()
-    // とりあえず3秒後に止めるようにする
-    setTimeout(() => {
-      handleStopCaptureClick()
-    }, 3000)
+    if (audio) {
+      audio.play()
+      // 音楽が終了したら止める
+      audio.addEventListener('ended', function () {
+        handleStopCaptureClick()
+      })
+    }
   }, [webcamRef, mediaRecorderRef])
 
   const handleDataAvailable = useCallback(
