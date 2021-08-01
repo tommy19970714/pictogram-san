@@ -16,6 +16,20 @@ import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
+import CountDownView from '../components/CountDownView'
+import CountUpView from '../components/CountUpView'
+import OlympicPictogram, {
+  OLYMPIC_PICTOGRAMS_SVGS,
+} from '../components/OlympicPictogram'
+
+type Stage =
+  | 'loading'
+  | 'ready'
+  | 'countdown'
+  | 'checking'
+  | 'moving'
+  | 'focus'
+  | 'share'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -26,7 +40,11 @@ export default function App() {
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
-  const [isLoaded, setIsLoaded] = useState<boolean>(false)
+  const [stage, setStage] = useState<Stage>('loading')
+  const [count, setCount] = useState<number>(1)
+  const [pictogramList, setPictogramList] = useState<string[]>(
+    OLYMPIC_PICTOGRAMS_SVGS
+  )
 
   const getAudioTrack = () => {
     return new Promise<MediaStreamTrack>((resolve) => {
@@ -47,10 +65,35 @@ export default function App() {
   }
 
   useEffect(() => {
+    setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
     handleStartDrawing()
   }, [])
 
-  const handleStartCaptureClick = useCallback(async () => {
+  useEffect(() => {
+    if (stage === 'countdown') {
+      setTimeout(() => {
+        setStage('checking')
+        handleStartCapture()
+      }, 3000)
+    } else if (stage === 'checking') {
+      setTimeout(() => {
+        setStage('moving')
+      }, 800)
+    } else if (stage === 'moving') {
+      setTimeout(() => {
+        setStage('focus')
+      }, 3000)
+    } else if (stage === 'focus') {
+      setTimeout(() => {
+        if (count < 6) {
+          setStage('checking')
+          setCount(count + 1)
+        }
+      }, 300)
+    }
+  }, [stage])
+
+  const handleStartCapture = useCallback(async () => {
     const canvasStream = (canvasRef.current as any).captureStream(
       60
     ) as MediaStream
@@ -69,7 +112,7 @@ export default function App() {
       audio.play()
       // 音楽が終了したら止める
       audio.addEventListener('ended', function () {
-        handleStopCaptureClick()
+        handleStopCapture()
       })
     }
   }, [webcamRef, mediaRecorderRef])
@@ -83,11 +126,12 @@ export default function App() {
     [setRecordedChunks]
   )
 
-  const handleStopCaptureClick = useCallback(() => {
+  const handleStopCapture = useCallback(() => {
     const audio = audioRef.current
     if (audio) audio.pause()
     console.log(mediaRecorderRef?.current)
     mediaRecorderRef?.current?.stop()
+    setStage('share')
   }, [mediaRecorderRef, webcamRef, recordedChunks])
 
   const videoConstraints = {
@@ -118,7 +162,7 @@ export default function App() {
     })
     await handleLoadWaiting()
     if (webcamRef.current && canvasRef.current && net) {
-      setIsLoaded(true)
+      setStage('ready')
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
@@ -188,22 +232,39 @@ export default function App() {
           right: 0,
         }}
       />
-      <RecordButton
-        onClick={handleStartCaptureClick}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
-      {recordedChunks.length > 0 && (
+      {stage === 'ready' && (
+        <RecordButton
+          onClick={() => setStage('countdown')}
+          style={{
+            position: 'absolute',
+            margin: 'auto',
+            textAlign: 'center',
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+      )}
+      {stage === 'countdown' && <CountDownView />}
+      {stage === 'checking' && (
+        <OlympicPictogram index={count} pictograms={pictogramList} size={200} />
+      )}
+      {stage === 'moving' && count < 7 && (
+        <>
+          <OlympicPictogram
+            index={count}
+            pictograms={pictogramList}
+            size={80}
+          />
+          <CountUpView current={count} max={6} />
+        </>
+      )}
+      {stage === 'focus' && <>{'forcus'}</>}
+      {stage === 'share' && recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
-      <button onClick={handleStopCaptureClick}>停止（仮）</button>
-      {!isLoaded && <Loader />}
+      <button onClick={handleStopCapture}>停止（仮）</button>
+      {stage === 'loading' && <Loader />}
     </div>
   )
 }
