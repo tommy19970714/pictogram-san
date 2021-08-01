@@ -119,6 +119,8 @@ export default function App() {
       canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
       if (context) {
+        context.scale(-1, 1)
+        context.translate(-canvas.width, 0)
         drawimage(net, webcam, context, canvas, isGame)
       }
     }
