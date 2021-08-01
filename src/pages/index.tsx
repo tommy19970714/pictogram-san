@@ -112,8 +112,10 @@ export default function App() {
       setIsLoaded(true)
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-      webcam.width = canvas.width = webcam.videoWidth
-      webcam.height = canvas.height = webcam.videoHeight
+      webcam.width = webcam.videoWidth
+      webcam.height = webcam.videoHeight
+      canvas.width = webcam.videoWidth
+      canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
       if (context) {
         drawimage(net, webcam, context, canvas)
