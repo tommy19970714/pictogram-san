@@ -1,6 +1,6 @@
 // ref: https://github.com/tensorflow/tfjs-models/blob/master/pose-detection/demos/live_video/src/camera.js
 
-import * as posedetection from '@tensorflow-models/pose-detection'
+import { util } from '@tensorflow-models/pose-detection'
 import { Keypoint, Pose } from '@tensorflow-models/posenet'
 import { SupportedModels } from '@tensorflow-models/pose-detection'
 import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
@@ -39,9 +39,7 @@ export class Render {
    * @param keypoints A list of keypoints.
    */
   drawKeypoints(keypoints: Keypoint[]) {
-    const keypointInd = posedetection.util.getKeypointIndexBySide(
-      SupportedModels.PoseNet
-    )
+    const keypointInd = util.getKeypointIndexBySide(SupportedModels.PoseNet)
     this.ctx.fillStyle = 'White'
     this.ctx.strokeStyle = 'White'
     this.ctx.lineWidth = DEFAULT_LINE_WIDTH
@@ -89,24 +87,22 @@ export class Render {
     this.ctx.strokeStyle = 'White'
     this.ctx.lineWidth = DEFAULT_LINE_WIDTH
 
-    posedetection.util
-      .getAdjacentPairs(SupportedModels.PoseNet)
-      .forEach(([i, j]) => {
-        const kp1 = keypoints[i]
-        const kp2 = keypoints[j]
+    util.getAdjacentPairs(SupportedModels.PoseNet).forEach(([i, j]) => {
+      const kp1 = keypoints[i]
+      const kp2 = keypoints[j]
 
-        // If score is null, just show the keypoint.
-        const score1 = kp1.score != null ? kp1.score : 1
-        const score2 = kp2.score != null ? kp2.score : 1
-        const scoreThreshold = POSENET_CONFIG.scoreThreshold || 0
+      // If score is null, just show the keypoint.
+      const score1 = kp1.score != null ? kp1.score : 1
+      const score2 = kp2.score != null ? kp2.score : 1
+      const scoreThreshold = POSENET_CONFIG.scoreThreshold || 0
 
-        if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
-          this.ctx.beginPath()
-          this.ctx.moveTo(kp1.position.x, kp1.position.y)
-          this.ctx.lineTo(kp2.position.x, kp2.position.y)
-          this.ctx.stroke()
-        }
-      })
+      if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
+        this.ctx.beginPath()
+        this.ctx.moveTo(kp1.position.x, kp1.position.y)
+        this.ctx.lineTo(kp2.position.x, kp2.position.y)
+        this.ctx.stroke()
+      }
+    })
   }
 
   drawStickFigure(keypoints: Keypoint[]) {
