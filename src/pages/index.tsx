@@ -15,16 +15,17 @@ import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
 import { RecordedVideo } from '../components/RecordedVideo'
+import Loader from '../components/Loader'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
-
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
+  const [isLoaded, setIsLoaded] = useState<boolean>(false)
 
   const handleStartCaptureClick = useCallback(() => {
     const canvasStream = (canvasRef.current as any).captureStream(60)
@@ -78,6 +79,7 @@ export default function App() {
       const webcamCurrent = webcamRef.current as any
       // go next step only when the video is completely uploaded.
       if (webcamCurrent.video.readyState === 4) {
+        setIsLoaded(true)
         const video = webcamCurrent.video
         const videoWidth = webcamCurrent.video.videoWidth
         const videoHeight = webcamCurrent.video.videoHeight
@@ -134,10 +136,7 @@ export default function App() {
   }, [])
 
   return (
-    <div className="App">
-      <header className="header">
-        <div className="title">PICTOGRAM SAN</div>
-      </header>
+    <div>
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
@@ -155,7 +154,6 @@ export default function App() {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 9,
         }}
       />
       <RecordButton
@@ -167,12 +165,12 @@ export default function App() {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 9,
         }}
       />
       {recordedChunks.length > 0 && (
         <RecordedVideo recordedChunks={recordedChunks} />
       )}
+      {!isLoaded && <Loader />}
     </div>
   )
 }
