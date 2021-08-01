@@ -19,6 +19,7 @@ import Loader from '../components/Loader'
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
   const mediaRecorderRef = useRef<any>(null)
   const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
@@ -27,14 +28,16 @@ export default function App() {
 
   const handleStartCaptureClick = useCallback(() => {
     const canvasStream = (canvasRef.current as any).captureStream(60)
+    const audio = audioRef.current
     mediaRecorderRef.current = new MediaRecorder(canvasStream, {
-      mimeType: isSafari ? 'video/mp4' : 'video/webm',
+      mimeType: isSafari ? 'video/webm' : 'video/webm',
     })
     mediaRecorderRef.current.addEventListener(
       'dataavailable',
       handleDataAvailable
     )
     mediaRecorderRef.current.start()
+    if (audio) audio.play()
     // とりあえず3秒後に止めるようにする
     setTimeout(() => {
       handleStopCaptureClick()
@@ -134,6 +137,9 @@ export default function App() {
 
   return (
     <div>
+      <audio ref={audioRef} preload="true">
+        <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
+      </audio>
       <Webcam
         audio={false}
         videoConstraints={videoConstraints}
