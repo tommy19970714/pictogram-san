@@ -11,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, maximum-scale=1, width=device-width"
         />
-        <title>Pictogram-san Challenge</title>
+        <title>Pictogram Challenge</title>
         <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css"></link>
       </Head>
       <Component {...pageProps} />

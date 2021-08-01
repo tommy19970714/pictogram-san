@@ -62,7 +62,7 @@ const Loader = () => {
     <DivWrapper>
       <LoaderWrapper>
         <Text>
-          Pictogram-san
+          Pictogram
           <br />
           Challenge
         </Text>

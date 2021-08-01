@@ -11,15 +11,14 @@ import {
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
 import { RingBuffer } from '../models/RingBuffer'
-import { isSafari } from 'react-device-detect'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
-import { RecordedVideo } from '../components/RecordedVideo'
 import Loader from '../components/Loader'
 import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton } from '../components/Buttons'
 import Modal from '../components/Modal'
 import { SmallText } from '../styles/TopPage'
+import { PhotoPreview } from '../components/PhotoPreview'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
@@ -29,8 +28,6 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
-  const mediaRecorderRef = useRef<any>(null)
-  const [recordedChunks, setRecordedChunks] = useState<BlobPart[]>([])
   const { width, height } = useWindowDimensions()
   const [stage, setStage] = useState<Stage>('loading')
   const [animationFrameId, setAnimationFrameId] = useState<number>()
@@ -38,24 +35,7 @@ export default function App() {
     OLYMPIC_PICTOGRAMS_SVGS
   )
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
-
-  const getAudioTrack = () => {
-    return new Promise<MediaStreamTrack>((resolve) => {
-      const audioContext = new AudioContext()
-      const audioElem = document.createElement('audio')
-      const source = document.createElement('source')
-      audioElem.appendChild(source)
-      source.src = '/pictogram-san_BGM.mp3'
-      source.type = 'audio/mp3'
-      audioElem.addEventListener('canplay', () => {
-        audioElem.play()
-        const audioSource = audioContext.createMediaElementSource(audioElem)
-        const dist = audioContext.createMediaStreamDestination()
-        audioSource.connect(dist)
-        resolve(dist.stream.getTracks()[0])
-      })
-    })
-  }
+  const [pngURL, setPngURL] = useState<string>('')
 
   useEffect(() => {
     setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
@@ -69,16 +49,16 @@ export default function App() {
       handleStartDrawing(true)
     }
     setTimeout(() => {
-      handleStartCapture()
+      audioPlay()
     }, 3200)
   }
 
   const handleRecordButtonClick = () => {
     setIsOpenModal(true)
-    setStage('moving')
     const audio = audioRef.current
     if (audio) {
       audio.muted = true
+      audio.currentTime = 0
       audio.play()
       audio.pause()
       audio.muted = false
@@ -88,8 +68,6 @@ export default function App() {
 
   const handleStartClick = () => {
     setIsOpenModal(false)
-    handleStartCapture()
-    audioPlay()
     handleStartGame()
   }
 
@@ -99,42 +77,11 @@ export default function App() {
       audio.play()
       // 音楽が終了したら止める
       audio.addEventListener('ended', function () {
-        handleStopCapture()
+        if (audio) audio.pause()
+        setStage('share')
       })
     }
   }
-
-  // ビデオ録画開始
-  const handleStartCapture = useCallback(async () => {
-    const canvasStream = (canvasRef.current as any).captureStream(
-      60
-    ) as MediaStream
-    canvasStream.addTrack(await getAudioTrack())
-    mediaRecorderRef.current = new MediaRecorder(canvasStream, {
-      mimeType: isSafari ? 'video/mp4' : 'video/webm',
-    })
-    mediaRecorderRef.current.addEventListener(
-      'dataavailable',
-      handleDataAvailable
-    )
-    mediaRecorderRef.current.start()
-  }, [webcamRef, mediaRecorderRef])
-
-  const handleDataAvailable = useCallback(
-    ({ data }) => {
-      if (data.size > 0) {
-        setRecordedChunks((prev) => prev.concat(data))
-      }
-    },
-    [setRecordedChunks]
-  )
-
-  const handleStopCapture = useCallback(() => {
-    const audio = audioRef.current
-    if (audio) audio.pause()
-    mediaRecorderRef?.current?.stop()
-    setStage('share')
-  }, [mediaRecorderRef, webcamRef, recordedChunks])
 
   const videoConstraints = {
     width: width > height ? height / 2 : width,
@@ -208,9 +155,14 @@ export default function App() {
       )
       rendering.drawResult(predictions[0])
       context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
-      if (isGame) {
-        const elapsedTime = Date.now() - startTime
+
+      const elapsedTime = Date.now() - startTime
+      if (isGame && elapsedTime < 31000) {
         rendering.drawGameUI(elapsedTime, pictogramList)
+        if (elapsedTime > 26000 && elapsedTime < 27000) {
+          const pngURL = canvas.toDataURL('image/png')
+          setPngURL(pngURL)
+        }
       }
     })()
   }
@@ -269,8 +221,8 @@ export default function App() {
           <DefaultButton onClick={handleStartClick}>OK</DefaultButton>
         </Modal>
       )}
-      {stage === 'share' && recordedChunks.length > 0 && (
-        <RecordedVideo recordedChunks={recordedChunks} />
+      {stage === 'share' && (
+        <PhotoPreview png={pngURL} clickTry={() => setStage('ready')} />
       )}
       {stage === 'loading' && <Loader />}
     </div>
