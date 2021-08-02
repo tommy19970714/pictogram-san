@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import '@tensorflow/tfjs-core'
 import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
@@ -13,12 +13,11 @@ import { Render } from '../models/render'
 import { RenderUI } from '../models/renderUI'
 import { RingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
-import { RecordButton } from '../components/RecordButton'
 import Loader from '../components/Loader'
 import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
-import { DefaultButton } from '../components/Buttons'
+import { DefaultButton, PinkButton } from '../components/Buttons'
 import Modal from '../components/Modal'
-import { SmallText } from '../styles/TopPage'
+import { SmallText, Buttons } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
@@ -54,7 +53,7 @@ export default function App() {
     }, 3200)
   }
 
-  const handleRecordButtonClick = () => {
+  const handleGameStartClick = () => {
     setIsOpenModal(true)
     const audio = audioRef.current
     if (audio) {
@@ -188,11 +187,21 @@ export default function App() {
     })()
   }
 
+  const TakePhoto = () => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      const pngURL = canvas.toDataURL('image/png')
+      setPngURL(pngURL)
+      setStage('share')
+    }
+  }
+
   return (
     <div>
       <audio ref={audioRef} preload="true">
         <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
       </audio>
+
       <Webcam
         audio={false}
         mirrored={true}
@@ -219,17 +228,10 @@ export default function App() {
         }}
       />
       {stage === 'ready' && (
-        <RecordButton
-          onClick={handleRecordButtonClick}
-          style={{
-            position: 'absolute',
-            margin: 'auto',
-            textAlign: 'center',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
+        <Buttons>
+          <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
+          <DefaultButton onClick={TakePhoto}>Take photo</DefaultButton>
+        </Buttons>
       )}
       {isOpenModal && (
         <Modal closeModal={() => setIsOpenModal(false)}>
