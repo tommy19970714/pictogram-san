@@ -86,8 +86,8 @@ export default function App() {
   }
 
   const videoConstraints = {
-    // width: width > height ? height / 2 : width,
-    // height: height / 2,
+    width: width > height ? height / 2 : width,
+    height: height / 2,
     facingMode: 'user',
   }
 
@@ -169,7 +169,7 @@ export default function App() {
       render.drawResult(predictions[0])
       mirrorContext.drawImage(
         webcam,
-        0,
+        (canvas.width - webcam.width) / 2,
         webcam.height,
         webcam.width,
         webcam.height
@@ -217,8 +217,6 @@ export default function App() {
               bottom: 0,
               left: 0,
               right: 0,
-              height: '50vh',
-              width: '100%',
             }}
           />
           <canvas
