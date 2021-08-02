@@ -56,6 +56,7 @@ export default function App() {
   const handleGameStartClick = () => {
     setIsOpenModal(true)
     const audio = audioRef.current
+
     if (audio) {
       audio.muted = true
       audio.currentTime = 0
@@ -85,8 +86,8 @@ export default function App() {
   }
 
   const videoConstraints = {
-    width: width > height ? height / 2 : width,
-    height: height / 2,
+    // width: width > height ? height / 2 : width,
+    // height: height / 2,
     facingMode: 'user',
   }
 
@@ -114,10 +115,10 @@ export default function App() {
       setStage('ready')
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-      webcam.width = webcam.videoWidth
-      webcam.height = webcam.videoHeight
-      canvas.width = webcam.videoWidth
-      canvas.height = webcam.videoHeight * 2
+      webcam.width = webcam.clientWidth
+      webcam.height = webcam.clientHeight
+      canvas.width = webcam.clientWidth
+      canvas.height = webcam.clientHeight * 2
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
@@ -199,9 +200,9 @@ export default function App() {
 
   return (
     <div>
-      {/* <audio ref={audioRef} preload="true">
+      <audio ref={audioRef} preload="true">
         <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
-      </audio> */}
+      </audio>
       {stage !== 'share' && (
         <>
           <Webcam
@@ -216,6 +217,8 @@ export default function App() {
               bottom: 0,
               left: 0,
               right: 0,
+              height: '50vh',
+              width: '100%',
             }}
           />
           <canvas
