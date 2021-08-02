@@ -118,7 +118,7 @@ export default function App() {
       webcam.width = webcam.videoWidth
       webcam.height = webcam.videoHeight
       canvas.width = width > height ? webcam.videoWidth : width
-      canvas.height = width > height ? webcam.videoHeight : height
+      canvas.height = width > height ? webcam.videoHeight * 2 : height
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
