@@ -169,7 +169,7 @@ export default function App() {
       render.drawResult(predictions[0])
       mirrorContext.drawImage(
         webcam,
-        (canvas.width - webcam.width) / 2,
+        0,
         webcam.height,
         webcam.width,
         webcam.height
