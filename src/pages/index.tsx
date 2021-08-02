@@ -170,9 +170,9 @@ export default function App() {
       mirrorContext.drawImage(
         webcam,
         0,
-        webcam.height,
-        webcam.width,
-        webcam.height
+        width > height ? webcam.height : canvas.height / 2,
+        canvas.width,
+        (canvas.height / 2) * (webcam.height / webcam.width)
       )
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
