@@ -10,4 +10,7 @@ export const SmallText = styled.p`
 
 export const ReturnButton = styled.img`
   cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 10px;
 `

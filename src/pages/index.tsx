@@ -18,7 +18,7 @@ import Loader from '../components/Loader'
 import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton } from '../components/Buttons'
 import Modal from '../components/Modal'
-import { SmallText } from '../styles/TopPage'
+import { ReturnButton, SmallText } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
@@ -32,6 +32,7 @@ export default function App() {
   const { width, height } = useWindowDimensions()
   const [stage, setStage] = useState<Stage>('loading')
   const [animationFrameId, setAnimationFrameId] = useState<number>()
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [pictogramList, setPictogramList] = useState<string[]>(
     OLYMPIC_PICTOGRAMS_SVGS
   )
@@ -87,7 +88,7 @@ export default function App() {
   const videoConstraints = {
     width: width > height ? height / 2 : width,
     height: height / 2,
-    facingMode: 'user',
+    facingMode: facingMode,
   }
 
   const handleLoadWaiting = async () => {
@@ -218,7 +219,15 @@ export default function App() {
           right: 0,
         }}
       />
-      <img src="/svgs/return-button.svg" alt="return" />
+      {width < height && (
+        <ReturnButton
+          src="/svgs/return-button.svg"
+          alt="return"
+          onClick={() =>
+            setFacingMode(facingMode === 'user' ? 'environment' : 'user')
+          }
+        />
+      )}
       {stage === 'ready' && (
         <RecordButton
           onClick={handleRecordButtonClick}
