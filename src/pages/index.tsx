@@ -115,10 +115,10 @@ export default function App() {
       setStage('ready')
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
-      webcam.width = webcam.clientWidth
-      webcam.height = webcam.clientHeight
-      canvas.width = webcam.clientWidth
-      canvas.height = webcam.clientHeight * 2
+      webcam.width = webcam.videoWidth
+      webcam.height = webcam.videoHeight
+      canvas.width = webcam.videoWidth
+      canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
