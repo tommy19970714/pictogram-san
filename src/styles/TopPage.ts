@@ -7,6 +7,13 @@ export const SmallText = styled.p`
   margin: 0;
 `
 
+export const ReturnButton = styled.img`
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}`
+
 export const Buttons = styled.div`
   position: fixed;
   margin: auto;
