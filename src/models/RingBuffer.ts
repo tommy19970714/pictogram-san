@@ -1,7 +1,7 @@
 import { Keypoint } from '@tensorflow-models/pose-detection'
 
 export class RingBuffer {
-  bit: number = 3
+  bit: number = 2
   size: number = 1 << this.bit
   mask: number = (1 << this.bit) - 1
   idx: number = 0
