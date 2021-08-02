@@ -136,7 +136,7 @@ export default function App() {
       const mirrorContext = mirrorCanvas.getContext('2d')
 
       if (context && mirrorContext) {
-        if (facingMode) {
+        if (facingMode === 'user') {
           mirrorContext.scale(-1, 1)
           mirrorContext.translate(-canvas.width, 0)
         }
