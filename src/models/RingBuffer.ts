@@ -3,7 +3,7 @@ import { Keypoint } from '@tensorflow-models/pose-detection'
 export class RingBuffer {
   bit: number = 2
   size: number = 1 << this.bit
-  mask: number = (1 << this.bit) - 1
+  mask: number = this.size - 1
   idx: number = 0
   count: number = 0
   ringBuffer: Keypoint[][] = []
@@ -12,7 +12,6 @@ export class RingBuffer {
   constructor() {
     this.ringBuffer = new Array(this.size)
     this.sumArray = new Array(17)
-    this.mask = (1 << 3) - 1
     for (let i = 0; i < 17; i++) {
       this.sumArray[i] = { x: 0, y: 0, score: 0, name: '' }
     }
