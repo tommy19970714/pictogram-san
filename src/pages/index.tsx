@@ -116,8 +116,8 @@ export default function App() {
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
       webcam.height = webcam.videoHeight
-      canvas.width = webcam.videoWidth
-      canvas.height = webcam.videoHeight * 2
+      canvas.width = width > height ? webcam.videoWidth : width
+      canvas.height = width > height ? webcam.videoHeight : height
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
@@ -170,9 +170,9 @@ export default function App() {
       mirrorContext.drawImage(
         webcam,
         0,
-        webcam.height,
-        webcam.width,
-        webcam.height
+        width > height ? webcam.height : canvas.height / 2,
+        canvas.width,
+        (canvas.height / 2) * (webcam.height / webcam.width)
       )
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
