@@ -73,6 +73,14 @@ export default function App() {
     handleStartGame()
   }
 
+  const handleFaceModeClick = () => {
+    setFacingMode(facingMode === 'user' ? 'environment' : 'user')
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+    }
+    handleStartDrawing(false)
+  }
+
   const audioPlay = () => {
     const audio = audioRef.current
     if (audio) {
@@ -128,8 +136,10 @@ export default function App() {
       const mirrorContext = mirrorCanvas.getContext('2d')
 
       if (context && mirrorContext) {
-        mirrorContext.scale(-1, 1)
-        mirrorContext.translate(-canvas.width, 0)
+        if (facingMode) {
+          mirrorContext.scale(-1, 1)
+          mirrorContext.translate(-canvas.width, 0)
+        }
         drawimage(
           net,
           webcam,
@@ -237,9 +247,7 @@ export default function App() {
         <ReturnButton
           src="/svgs/return-button.svg"
           alt="return"
-          onClick={() =>
-            setFacingMode(facingMode === 'user' ? 'environment' : 'user')
-          }
+          onClick={handleFaceModeClick}
         />
       )}
       {stage === 'ready' && (
