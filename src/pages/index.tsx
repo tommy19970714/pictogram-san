@@ -10,6 +10,7 @@ import {
   InputResolution,
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
+import { RenderUI } from '../models/renderUI'
 import { RingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import { RecordButton } from '../components/RecordButton'
@@ -104,7 +105,7 @@ export default function App() {
     const resolution: InputResolution = { width: 128, height: 128 }
     const net = await createDetector(modelName, {
       quantBytes: 2, // 4
-      architecture: 'ResNet50', // 'MobileNetV1'
+      architecture: 'MobileNetV1', // ResNet50
       outputStride: 16,
       inputResolution: resolution,
     })
@@ -118,10 +119,24 @@ export default function App() {
       canvas.width = webcam.videoWidth
       canvas.height = webcam.videoHeight * 2
       const context = canvas.getContext('2d')
-      if (context) {
-        context.scale(-1, 1)
-        context.translate(-canvas.width, 0)
-        drawimage(net, webcam, context, canvas, isGame)
+
+      const mirrorCanvas = document.createElement('canvas')
+      mirrorCanvas.width = canvas.width
+      mirrorCanvas.height = canvas.height
+      const mirrorContext = mirrorCanvas.getContext('2d')
+
+      if (context && mirrorContext) {
+        mirrorContext.scale(-1, 1)
+        mirrorContext.translate(-canvas.width, 0)
+        drawimage(
+          net,
+          webcam,
+          context,
+          canvas,
+          mirrorContext,
+          mirrorCanvas,
+          isGame
+        )
       }
     }
   }
@@ -131,6 +146,8 @@ export default function App() {
     webcam: HTMLVideoElement,
     context: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
+    mirrorContext: CanvasRenderingContext2D,
+    mirrorCanvas: HTMLCanvasElement,
     isGame: boolean
   ) => {
     const startTime = Date.now()
@@ -146,20 +163,23 @@ export default function App() {
       context.clearRect(0, 0, canvas.width, canvas.height)
       context.fillStyle = 'white'
       context.fillRect(0, 0, canvas.width, canvas.height)
+      mirrorContext.clearRect(0, 0, canvas.width, canvas.height)
 
-      const rendering = new Render(
-        modelName,
-        context,
-        ringBuffre,
-        canvas.width,
-        canvas.height
+      const render = new Render(modelName, mirrorContext, ringBuffre)
+      render.drawResult(predictions[0])
+      mirrorContext.drawImage(
+        webcam,
+        0,
+        webcam.height,
+        webcam.width,
+        webcam.height
       )
-      rendering.drawResult(predictions[0])
-      context.drawImage(webcam, 0, webcam.height, webcam.width, webcam.height)
+      context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
+      const renderUI = new RenderUI(context, canvas.width, canvas.height)
       const elapsedTime = Date.now() - startTime
       if (isGame && elapsedTime < 31000) {
-        rendering.drawGameUI(elapsedTime, pictogramList)
+        renderUI.drawGameUI(elapsedTime, pictogramList)
         if (elapsedTime > 26000 && elapsedTime < 27000) {
           const pngURL = canvas.toDataURL('image/png')
           setPngURL(pngURL)
@@ -175,6 +195,7 @@ export default function App() {
       </audio>
       <Webcam
         audio={false}
+        mirrored={true}
         videoConstraints={videoConstraints}
         ref={webcamRef}
         style={{
