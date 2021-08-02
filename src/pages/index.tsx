@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import '@tensorflow/tfjs-core'
 import '@tensorflow/tfjs-converter'
 import '@tensorflow/tfjs-backend-webgl'
@@ -13,12 +13,11 @@ import { Render } from '../models/render'
 import { RenderUI } from '../models/renderUI'
 import { RingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
-import { RecordButton } from '../components/RecordButton'
 import Loader from '../components/Loader'
 import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
-import { DefaultButton } from '../components/Buttons'
+import { DefaultButton, PinkButton } from '../components/Buttons'
 import Modal from '../components/Modal'
-import { SmallText } from '../styles/TopPage'
+import { SmallText, Buttons } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
@@ -31,7 +30,7 @@ export default function App() {
   const ringBuffre = new RingBuffer()
   const { width, height } = useWindowDimensions()
   const [stage, setStage] = useState<Stage>('loading')
-  const [animationFrameId, setAnimationFrameId] = useState<number>()
+  const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [pictogramList, setPictogramList] = useState<string[]>(
     OLYMPIC_PICTOGRAMS_SVGS
   )
@@ -54,9 +53,10 @@ export default function App() {
     }, 3200)
   }
 
-  const handleRecordButtonClick = () => {
+  const handleGameStartClick = () => {
     setIsOpenModal(true)
     const audio = audioRef.current
+
     if (audio) {
       audio.muted = true
       audio.currentTime = 0
@@ -78,6 +78,7 @@ export default function App() {
       audio.play()
       // 音楽が終了したら止める
       audio.addEventListener('ended', function () {
+        cancelAnimationFrame(animationFrameId)
         if (audio) audio.pause()
         setStage('share')
       })
@@ -154,7 +155,6 @@ export default function App() {
     ;(async function drawMask() {
       const id = requestAnimationFrame(drawMask)
       setAnimationFrameId(id)
-
       const predictions = await net.estimatePoses(webcam, {
         maxPoses: 1,
         flipHorizontal: false,
@@ -188,48 +188,55 @@ export default function App() {
     })()
   }
 
+  const TakePhoto = () => {
+    cancelAnimationFrame(animationFrameId)
+    const canvas = canvasRef.current
+    if (canvas) {
+      const pngURL = canvas.toDataURL('image/png')
+      setPngURL(pngURL)
+      setStage('share')
+    }
+  }
+
   return (
     <div>
       <audio ref={audioRef} preload="true">
         <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
       </audio>
-      <Webcam
-        audio={false}
-        mirrored={true}
-        videoConstraints={videoConstraints}
-        ref={webcamRef}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          top: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
+      {stage !== 'share' && (
+        <>
+          <Webcam
+            audio={false}
+            mirrored={true}
+            videoConstraints={videoConstraints}
+            ref={webcamRef}
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              bottom: 0,
+              left: 0,
+              right: 0,
+            }}
+          />
+          <canvas
+            ref={canvasRef}
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              top: 0,
+              left: 0,
+              right: 0,
+            }}
+          />
+        </>
+      )}
       {stage === 'ready' && (
-        <RecordButton
-          onClick={handleRecordButtonClick}
-          style={{
-            position: 'absolute',
-            margin: 'auto',
-            textAlign: 'center',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
+        <Buttons>
+          <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
+          <DefaultButton onClick={TakePhoto}>Take photo</DefaultButton>
+        </Buttons>
       )}
       {isOpenModal && (
         <Modal closeModal={() => setIsOpenModal(false)}>
@@ -244,7 +251,13 @@ export default function App() {
         </Modal>
       )}
       {stage === 'share' && (
-        <PhotoPreview png={pngURL} clickTry={() => setStage('ready')} />
+        <PhotoPreview
+          png={pngURL}
+          clickTry={() => {
+            setStage('ready')
+            handleStartDrawing(false)
+          }}
+        />
       )}
       {stage === 'loading' && <Loader />}
     </div>

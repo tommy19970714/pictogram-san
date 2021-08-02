@@ -1,9 +1,19 @@
 import styled from 'styled-components'
 
-// ここにTopページに関するスタイルを入れていく
 export const SmallText = styled.p`
   font-weight: 700;
   font-size: 20px;
   color: #0a2569;
   margin: 0;
+`
+
+export const Buttons = styled.div`
+  position: fixed;
+  margin: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
 `
