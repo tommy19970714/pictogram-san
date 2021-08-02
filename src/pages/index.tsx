@@ -40,14 +40,14 @@ export default function App() {
 
   useEffect(() => {
     setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
-    handleStartDrawing(false)
+    handleStartDrawing(false, facingMode)
   }, [])
 
   const handleStartGame = () => {
     setStage('moving')
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId)
-      handleStartDrawing(true)
+      handleStartDrawing(true, facingMode)
     }
     setTimeout(() => {
       audioPlay()
@@ -71,6 +71,15 @@ export default function App() {
   const handleStartClick = () => {
     setIsOpenModal(false)
     handleStartGame()
+  }
+
+  const handleFaceModeClick = () => {
+    const mode = facingMode === 'user' ? 'environment' : 'user'
+    setFacingMode(mode)
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+    }
+    handleStartDrawing(false, mode)
   }
 
   const audioPlay = () => {
@@ -103,7 +112,10 @@ export default function App() {
     })
   }
 
-  const handleStartDrawing = async (isGame: boolean) => {
+  const handleStartDrawing = async (
+    isGame: boolean,
+    cameraMode: 'user' | 'environment'
+  ) => {
     const resolution: InputResolution = { width: 128, height: 128 }
     const net = await createDetector(modelName, {
       quantBytes: 2, // 4
@@ -128,8 +140,11 @@ export default function App() {
       const mirrorContext = mirrorCanvas.getContext('2d')
 
       if (context && mirrorContext) {
-        mirrorContext.scale(-1, 1)
-        mirrorContext.translate(-canvas.width, 0)
+        console.log(cameraMode)
+        if (cameraMode === 'user') {
+          mirrorContext.scale(-1, 1)
+          mirrorContext.translate(-canvas.width, 0)
+        }
         drawimage(
           net,
           webcam,
@@ -233,15 +248,12 @@ export default function App() {
           />
         </>
       )}
-      {width < height && (
-        <ReturnButton
-          src="/svgs/return-button.svg"
-          alt="return"
-          onClick={() =>
-            setFacingMode(facingMode === 'user' ? 'environment' : 'user')
-          }
-        />
-      )}
+
+      <ReturnButton
+        src="/svgs/return-button.svg"
+        alt="return"
+        onClick={handleFaceModeClick}
+      />
       {stage === 'ready' && (
         <Buttons>
           <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
@@ -265,7 +277,7 @@ export default function App() {
           png={pngURL}
           clickTry={() => {
             setStage('ready')
-            handleStartDrawing(false)
+            handleStartDrawing(false, facingMode)
           }}
         />
       )}
