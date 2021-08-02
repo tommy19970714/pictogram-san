@@ -30,7 +30,7 @@ export default function App() {
   const ringBuffre = new RingBuffer()
   const { width, height } = useWindowDimensions()
   const [stage, setStage] = useState<Stage>('loading')
-  const [animationFrameId, setAnimationFrameId] = useState<number>()
+  const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [pictogramList, setPictogramList] = useState<string[]>(
     OLYMPIC_PICTOGRAMS_SVGS
   )
@@ -77,6 +77,7 @@ export default function App() {
       audio.play()
       // 音楽が終了したら止める
       audio.addEventListener('ended', function () {
+        cancelAnimationFrame(animationFrameId)
         if (audio) audio.pause()
         setStage('share')
       })
@@ -153,7 +154,6 @@ export default function App() {
     ;(async function drawMask() {
       const id = requestAnimationFrame(drawMask)
       setAnimationFrameId(id)
-
       const predictions = await net.estimatePoses(webcam, {
         maxPoses: 1,
         flipHorizontal: false,
@@ -188,6 +188,7 @@ export default function App() {
   }
 
   const TakePhoto = () => {
+    cancelAnimationFrame(animationFrameId)
     const canvas = canvasRef.current
     if (canvas) {
       const pngURL = canvas.toDataURL('image/png')
@@ -198,35 +199,38 @@ export default function App() {
 
   return (
     <div>
-      <audio ref={audioRef} preload="true">
+      {/* <audio ref={audioRef} preload="true">
         <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
-      </audio>
-
-      <Webcam
-        audio={false}
-        mirrored={true}
-        videoConstraints={videoConstraints}
-        ref={webcamRef}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'absolute',
-          margin: 'auto',
-          textAlign: 'center',
-          top: 0,
-          left: 0,
-          right: 0,
-        }}
-      />
+      </audio> */}
+      {stage !== 'share' && (
+        <>
+          <Webcam
+            audio={false}
+            mirrored={true}
+            videoConstraints={videoConstraints}
+            ref={webcamRef}
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              bottom: 0,
+              left: 0,
+              right: 0,
+            }}
+          />
+          <canvas
+            ref={canvasRef}
+            style={{
+              position: 'absolute',
+              margin: 'auto',
+              textAlign: 'center',
+              top: 0,
+              left: 0,
+              right: 0,
+            }}
+          />
+        </>
+      )}
       {stage === 'ready' && (
         <Buttons>
           <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
@@ -246,7 +250,13 @@ export default function App() {
         </Modal>
       )}
       {stage === 'share' && (
-        <PhotoPreview png={pngURL} clickTry={() => setStage('ready')} />
+        <PhotoPreview
+          png={pngURL}
+          clickTry={() => {
+            setStage('ready')
+            handleStartDrawing(false)
+          }}
+        />
       )}
       {stage === 'loading' && <Loader />}
     </div>
