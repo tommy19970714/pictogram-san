@@ -7,3 +7,7 @@ export const SmallText = styled.p`
   color: #0a2569;
   margin: 0;
 `
+
+export const ReturnButton = styled.img`
+  cursor: pointer;
+`

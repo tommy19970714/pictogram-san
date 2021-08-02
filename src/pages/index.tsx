@@ -218,6 +218,7 @@ export default function App() {
           right: 0,
         }}
       />
+      <img src="/svgs/return-button.svg" alt="return" />
       {stage === 'ready' && (
         <RecordButton
           onClick={handleRecordButtonClick}
