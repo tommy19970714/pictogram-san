@@ -31,10 +31,11 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta property="og:image" content="https://pictogram-san/ogp.png" />
         <title>Pictogram Challenge</title>
         <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css"></link>
+        <script src="/__/firebase/8.8.1/firebase-app.js"></script>
+        <script src="/__/firebase/8.8.1/firebase-analytics.js"></script>
+        <script src="/__/firebase/init.js"></script>
       </Head>
       <Component {...pageProps} />
-      <Script src="/__/firebase/8.7.1/firebase-app.js" />
-      <Script src="/__/firebase/8.7.1/firebase-analytics.js" />
     </>
   )
 }
