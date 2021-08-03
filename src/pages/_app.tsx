@@ -1,6 +1,7 @@
 import React from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import Script from 'next/script'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -32,6 +33,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css"></link>
       </Head>
       <Component {...pageProps} />
+      <Script src="/__/firebase/8.7.1/firebase-app.js" />
+      <Script src="/__/firebase/8.7.1/firebase-analytics.js" />
     </>
   )
 }
