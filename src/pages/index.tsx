@@ -141,7 +141,6 @@ export default function App() {
       const mirrorContext = mirrorCanvas.getContext('2d')
 
       if (context && mirrorContext) {
-        console.log(cameraMode)
         if (cameraMode === 'user') {
           mirrorContext.scale(-1, 1)
           mirrorContext.translate(-canvas.width, 0)
