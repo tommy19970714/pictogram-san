@@ -119,16 +119,8 @@ export class Render {
     const currentKP = this.keypointsBuffer.getAverage()
 
     const faceCenter = this.getFaceCenter(currentKP)
-    const leftNose2Ear = Math.hypot(
-      currentKP[1].x - currentKP[0].x,
-      currentKP[1].y - currentKP[0].y
-    )
-    const rightNose2Ear = Math.hypot(
-      currentKP[0].x - currentKP[2].x,
-      currentKP[0].y - currentKP[2].y
-    )
-    const faceRadius = Math.max(leftNose2Ear, rightNose2Ear) * 2
     const stickRadius1 = faceRadius * 0.6
+    const faceRadius = 35
     const stickRadius2 = stickRadius1 * 0.75
     const stickRadius3 = stickRadius2 * 0.75
 
