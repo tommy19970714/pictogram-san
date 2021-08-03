@@ -97,7 +97,7 @@ export default function App() {
   }
 
   const videoConstraints = {
-    width: width > height ? height / 2 : width,
+    width: isPC ? height / 2 : width,
     height: height / 2,
     facingMode: facingMode,
   }
@@ -131,8 +131,8 @@ export default function App() {
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
       webcam.height = webcam.videoHeight
-      canvas.width = width > height ? webcam.videoWidth : width
-      canvas.height = width > height ? webcam.videoHeight * 2 : height
+      canvas.width = isPC ? webcam.videoWidth : width
+      canvas.height = isPC ? webcam.videoHeight * 2 : height
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
