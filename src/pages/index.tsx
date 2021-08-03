@@ -29,6 +29,7 @@ export default function App() {
   const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
   const { width, height } = useWindowDimensions()
+  const isPC = width > height
   const [stage, setStage] = useState<Stage>('loading')
   const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
@@ -248,12 +249,13 @@ export default function App() {
           />
         </>
       )}
-
-      <ReturnButton
-        src="/svgs/return-button.svg"
-        alt="return"
-        onClick={handleFaceModeClick}
-      />
+      {!isPC && (
+        <ReturnButton
+          src="/svgs/return-button.svg"
+          alt="return"
+          onClick={handleFaceModeClick}
+        />
+      )}
       {stage === 'ready' && (
         <Buttons>
           <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
