@@ -87,7 +87,7 @@ const Loader = () => {
     if (isMounted) {
       const timer = setInterval(() => {
         const tempText =
-          LoadingTexts[Math.floor(Math.random() * (LoadingTexts.length + 1))]
+          LoadingTexts[Math.floor(Math.random() * LoadingTexts.length)]
         setText(tempText)
         if (++count == 5) {
           clearInterval(timer)
