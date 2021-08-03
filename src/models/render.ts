@@ -40,48 +40,7 @@ export class Render {
    */
   drawResult(pose: Pose) {
     if (pose.keypoints != null) {
-      this.drawKeypoints(pose.keypoints)
-      this.drawSkeleton(pose.keypoints)
       this.drawStickFigure(pose.keypoints)
-    }
-  }
-  /**
-   * Draw the keypoints on the video.
-   * @param keypoints A list of keypoints.
-   */
-  drawKeypoints(keypoints: Keypoint[]) {
-    const keypointInd = posedetection.util.getKeypointIndexBySide(
-      this.modelName
-    )
-    this.ctx.fillStyle = 'White'
-    this.ctx.strokeStyle = 'White'
-    this.ctx.lineWidth = DEFAULT_LINE_WIDTH
-
-    for (const i of keypointInd.middle) {
-      this.drawKeypoint(keypoints[i])
-    }
-
-    this.ctx.fillStyle = 'Green'
-    for (const i of keypointInd.left) {
-      this.drawKeypoint(keypoints[i])
-    }
-
-    this.ctx.fillStyle = 'Orange'
-    for (const i of keypointInd.right) {
-      this.drawKeypoint(keypoints[i])
-    }
-  }
-
-  drawKeypoint(keypoint: Keypoint) {
-    // If score is null, just show the keypoint.
-    const score = keypoint.score != null ? keypoint.score : 1
-    const scoreThreshold = this.modelConfig.scoreThreshold || 0
-
-    if (score >= scoreThreshold) {
-      const circle = new Path2D()
-      circle.arc(keypoint.x, keypoint.y, DEFAULT_RADIUS, 0, 2 * Math.PI)
-      this.ctx.fill(circle)
-      this.ctx.stroke(circle)
     }
   }
 
