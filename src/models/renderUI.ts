@@ -32,7 +32,7 @@ export class RenderUI {
     this.ctx.fillText(
       Math.floor(4 - time / 1000).toString(),
       this.width / 2 - 100,
-      this.height / 2 - 100
+      (this.height - 100) / 2
     )
   }
 
@@ -45,7 +45,7 @@ export class RenderUI {
     this.ctx.drawImage(
       svg,
       this.width / 8,
-      this.height / 16,
+      this.height / 32,
       this.width * 0.75,
       this.width * 0.75
     )
