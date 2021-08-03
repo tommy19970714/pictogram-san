@@ -33,6 +33,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css"></link>
       </Head>
       <Component {...pageProps} />
+      <Script src="/__/firebase/init.js" />
       <Script src="/__/firebase/8.7.1/firebase-app.js" />
       <Script src="/__/firebase/8.7.1/firebase-analytics.js" />
     </>
