@@ -20,7 +20,7 @@ import Modal from '../components/Modal'
 import { Buttons, ReturnButton, SmallText } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
-export type Stage = 'loading' | 'ready' | 'moving' | 'share'
+type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
