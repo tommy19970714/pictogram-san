@@ -29,6 +29,7 @@ export default function App() {
   const modelName = SupportedModels.PoseNet
   const ringBuffre = new RingBuffer()
   const { width, height } = useWindowDimensions()
+  const isPC = width > height
   const [stage, setStage] = useState<Stage>('loading')
   const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
@@ -96,7 +97,7 @@ export default function App() {
   }
 
   const videoConstraints = {
-    width: width > height ? height / 2 : width,
+    width: isPC ? height / 2 : width,
     height: height / 2,
     facingMode: facingMode,
   }
@@ -130,8 +131,8 @@ export default function App() {
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
       webcam.height = webcam.videoHeight
-      canvas.width = width > height ? webcam.videoWidth : width
-      canvas.height = width > height ? webcam.videoHeight * 2 : height
+      canvas.width = isPC ? webcam.videoWidth : width
+      canvas.height = isPC ? webcam.videoHeight * 2 : height
       const context = canvas.getContext('2d')
 
       const mirrorCanvas = document.createElement('canvas')
@@ -248,12 +249,13 @@ export default function App() {
           />
         </>
       )}
-
-      <ReturnButton
-        src="/svgs/return-button.svg"
-        alt="return"
-        onClick={handleFaceModeClick}
-      />
+      {!isPC && (
+        <ReturnButton
+          src="/svgs/return-button.svg"
+          alt="return"
+          onClick={handleFaceModeClick}
+        />
+      )}
       {stage === 'ready' && (
         <Buttons>
           <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>
