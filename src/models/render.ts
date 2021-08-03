@@ -119,8 +119,8 @@ export class Render {
     const currentKP = this.keypointsBuffer.getAverage()
 
     const faceCenter = this.getFaceCenter(currentKP)
-    const stickRadius1 = faceRadius * 0.6
     const faceRadius = 35
+    const stickRadius1 = faceRadius * 0.75
     const stickRadius2 = stickRadius1 * 0.75
     const stickRadius3 = stickRadius2 * 0.75
 
