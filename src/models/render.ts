@@ -40,8 +40,8 @@ export class Render {
    */
   drawResult(pose: Pose) {
     if (pose.keypoints != null) {
-      this.drawKeypoints(pose.keypoints)
-      this.drawSkeleton(pose.keypoints)
+      // this.drawKeypoints(pose.keypoints)
+      // this.drawSkeleton(pose.keypoints)
       this.drawStickFigure(pose.keypoints)
     }
   }
