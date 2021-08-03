@@ -36,9 +36,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <script src="/__/firebase/init.js"></script>
       </Head>
       <Component {...pageProps} />
-      <Script src="/__/firebase/8.7.1/firebase-app.js" />
-      <Script src="/__/firebase/8.7.1/firebase-analytics.js" />
-      <Script src="/__/firebase/init.js" />
     </>
   )
 }
