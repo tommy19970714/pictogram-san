@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 
 export const SmallText = styled.p`
+  font-family: 'Noto Sans JP', sans-serif;
   font-weight: 700;
   font-size: 20px;
   color: #0a2569;
