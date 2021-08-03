@@ -7,7 +7,7 @@ import {
   Pose,
 } from '@tensorflow-models/pose-detection'
 import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
-import { RingBuffer } from './RingBuffer'
+import { KeypointsRingBuffer } from './RingBuffer'
 
 export const POSENET_CONFIG = {
   maxPoses: 1,
@@ -21,17 +21,17 @@ export class Render {
   ctx: CanvasRenderingContext2D
   modelName: SupportedModels
   modelConfig: any
-  ringBuffer: RingBuffer
+  keypointsBuffer: KeypointsRingBuffer
 
   constructor(
     model: SupportedModels,
     context: CanvasRenderingContext2D,
-    ringBuffer: RingBuffer
+    keypointsBuffer: KeypointsRingBuffer
   ) {
     this.modelName = model
     this.ctx = context
     this.modelConfig = { ...POSENET_CONFIG }
-    this.ringBuffer = ringBuffer
+    this.keypointsBuffer = keypointsBuffer
   }
 
   /**
@@ -115,8 +115,8 @@ export class Render {
   drawStickFigure(keypoints: Keypoint[]) {
     this.ctx.fillStyle = '#032164'
 
-    this.ringBuffer.add(keypoints)
-    const currentKP = this.ringBuffer.getAverage()
+    this.keypointsBuffer.add(keypoints)
+    const currentKP = this.keypointsBuffer.getAverage()
 
     const faceCenter = this.getFaceCenter(currentKP)
     const leftNose2Ear = Math.hypot(
