@@ -20,7 +20,7 @@ import Modal from '../components/Modal'
 import { Buttons, ReturnButton, SmallText } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
-type Stage = 'loading' | 'ready' | 'moving' | 'share'
+export type Stage = 'loading' | 'ready' | 'moving' | 'share'
 
 export default function App() {
   const webcamRef = useRef<Webcam>(null)
@@ -141,7 +141,6 @@ export default function App() {
       const mirrorContext = mirrorCanvas.getContext('2d')
 
       if (context && mirrorContext) {
-        console.log(cameraMode)
         if (cameraMode === 'user') {
           mirrorContext.scale(-1, 1)
           mirrorContext.translate(-canvas.width, 0)

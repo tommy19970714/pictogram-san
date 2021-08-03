@@ -19,7 +19,6 @@ export class RingBuffer {
   }
 
   add(keypoints: Keypoint[]) {
-    console.log(this.count, this.size)
     if (this.count >= this.size) {
       for (let i = 0; i < 17; i++) {
         const temp = this.sumArray[i].score || 0

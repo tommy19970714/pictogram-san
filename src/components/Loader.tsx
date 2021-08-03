@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components'
 
 const DivWrapper = styled.div`
@@ -10,6 +10,7 @@ const DivWrapper = styled.div`
   left: 0;
   right: 0;
   background-color: white;
+  font-family: 'Noto Sans JP', sans-serif;
 `
 
 const LoaderWrapper = styled.div`
@@ -57,7 +58,46 @@ const TopImage = styled.img`
   height: 190px;
 `
 
+const SubText = styled.p`
+  position: absolute;
+  top: 290px;
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: #0a2569;
+`
+
+const LoadingTexts: string[] = [
+  'Loading...',
+  'Wait a moment...',
+  'We are preparing now...',
+  'Give us some seconds',
+  'Sorry for waiting...',
+  'Please keep waiting...',
+  'Just some minutes, please',
+  'You are almost there...',
+]
 const Loader = () => {
+  const [text, setText] = useState<string>(LoadingTexts[1])
+
+  useEffect(() => {
+    let isMounted = true
+    let count = 0
+    if (isMounted) {
+      const timer = setInterval(() => {
+        const tempText =
+          LoadingTexts[Math.floor(Math.random() * (LoadingTexts.length + 1))]
+        setText(tempText)
+        if (++count == 5) {
+          clearInterval(timer)
+        }
+      }, 1500)
+    }
+    return () => {
+      isMounted = false
+    }
+  }, [])
   return (
     <DivWrapper>
       <LoaderWrapper>
@@ -68,6 +108,7 @@ const Loader = () => {
         </Text>
         <LoaderImage src="/svgs/loader.svg" alt="loader" />
         <TopImage src="/svgs/top-icon.svg" alt="loader" />
+        <SubText>{text}</SubText>
       </LoaderWrapper>
     </DivWrapper>
   )
