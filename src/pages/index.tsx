@@ -219,7 +219,7 @@ export default function App() {
   return (
     <div>
       <audio ref={audioRef} preload="true">
-        <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
+        <source src="./pictogram-san_bgm.mp3" type="audio/mp3" />
       </audio>
       {stage !== 'share' && (
         <>
