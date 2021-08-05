@@ -7,6 +7,7 @@ export const POSENET_CONFIG = {
 
 export const DEFAULT_LINE_WIDTH = 2
 export const DEFAULT_RADIUS = 4
+export const INTERVAL_TIME = 8000
 
 export class RenderUI {
   ctx: CanvasRenderingContext2D
@@ -100,26 +101,32 @@ export class RenderUI {
     }
   }
 
+  isSkip(time: number): boolean {
+    const elapsedTime = time - 3000
+    const elapsedIntervalTime = elapsedTime % INTERVAL_TIME
+    if (elapsedIntervalTime > 7000) {
+      return true
+    }
+    return false
+  }
+
   drawGameUI(time: number, pictograms: string[]) {
     if (time < 3000) {
       this.drawCountDownUI(time)
     } else {
       const elapsedTime = time - 3000
-      const INTERVAL_TIME = 800
-      const SPLIT_NUM = 5
-      const multi = INTERVAL_TIME * SPLIT_NUM
-      const count = Math.floor(elapsedTime / INTERVAL_TIME / 5)
-      const index = Math.floor(elapsedTime / INTERVAL_TIME) % 5
-      const splitTime = (elapsedTime % multi) / multi
-      if (index < 2) {
-        if (count < SPLIT_NUM + 1) {
-          this.drawBigPictogramUI(count, pictograms)
-        }
-      } else if (index === 4) {
-        this.drawFocusUI(splitTime)
+      const count = Math.floor(elapsedTime / INTERVAL_TIME)
+      const elapsedIntervalTime = elapsedTime % INTERVAL_TIME
+      if (elapsedIntervalTime < 2000) {
+        this.drawBigPictogramUI(count, pictograms)
+      } else if (elapsedIntervalTime > 7000) {
+        this.drawFocusUI(1)
+      } else if (elapsedIntervalTime > 6000) {
+        const focusTime = (elapsedIntervalTime - 6000) / 1000
+        this.drawFocusUI(focusTime)
       } else {
         this.drawSmallPictogramUI(count, pictograms)
-        this.drawCountUpUI(count + 1, 6)
+        this.drawCountUpUI(count + 1, 5)
       }
     }
   }

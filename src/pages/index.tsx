@@ -14,7 +14,7 @@ import { RenderUI } from '../models/renderUI'
 import { KeypointsRingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import Loader from '../components/Loader'
-import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
+import { ORDERED_OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton, PinkButton } from '../components/Buttons'
 import Modal from '../components/Modal'
 import { Buttons, ReturnButton, SmallText } from '../styles/TopPage'
@@ -34,13 +34,15 @@ export default function App() {
   const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [pictogramList, setPictogramList] = useState<string[]>(
-    OLYMPIC_PICTOGRAMS_SVGS
+    ORDERED_OLYMPIC_PICTOGRAMS_SVGS
   )
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
   const [pngURL, setPngURL] = useState<string>('')
 
   useEffect(() => {
-    setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
+    // setPictogramList(
+    //   ORDERED_OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random())
+    // )
     handleStartDrawing(false, facingMode)
   }, [])
 
@@ -77,9 +79,7 @@ export default function App() {
   const handleFaceModeClick = () => {
     const mode = facingMode === 'user' ? 'environment' : 'user'
     setFacingMode(mode)
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId)
-    }
+    cancelAnimationFrame(animationFrameId)
     handleStartDrawing(false, mode)
   }
 
@@ -126,7 +126,9 @@ export default function App() {
     })
     await handleLoadWaiting()
     if (webcamRef.current && canvasRef.current && net) {
-      setStage('ready')
+      if (stage === 'loading') {
+        setStage('ready')
+      }
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
@@ -176,6 +178,16 @@ export default function App() {
         flipHorizontal: false,
       })
 
+      const elapsedTime = Date.now() - startTime
+      const renderUI = new RenderUI(context, canvas.width, canvas.height)
+      if (elapsedTime > 40000 && elapsedTime < 41000) {
+        const pngURL = canvas.toDataURL('image/png')
+        setPngURL(pngURL)
+      }
+      if (renderUI.isSkip(elapsedTime)) {
+        return
+      }
+
       context.clearRect(0, 0, canvas.width, canvas.height)
       context.fillStyle = 'white'
       context.fillRect(0, 0, canvas.width, canvas.height)
@@ -192,14 +204,8 @@ export default function App() {
       )
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
-      const renderUI = new RenderUI(context, canvas.width, canvas.height)
-      const elapsedTime = Date.now() - startTime
-      if (isGame && elapsedTime < 31000) {
+      if (isGame && elapsedTime < 44000) {
         renderUI.drawGameUI(elapsedTime, pictogramList)
-        if (elapsedTime > 26000 && elapsedTime < 27000) {
-          const pngURL = canvas.toDataURL('image/png')
-          setPngURL(pngURL)
-        }
       }
     })()
   }
@@ -217,37 +223,33 @@ export default function App() {
   return (
     <div>
       <audio ref={audioRef} preload="true">
-        <source src="./pictogram-san_BGM.mp3" type="audio/mp3" />
+        <source src="./pictogram_san_bgm.mp3" type="audio/mp3" />
       </audio>
-      {stage !== 'share' && (
-        <>
-          <Webcam
-            audio={false}
-            mirrored={true}
-            videoConstraints={videoConstraints}
-            ref={webcamRef}
-            style={{
-              position: 'absolute',
-              margin: 'auto',
-              textAlign: 'center',
-              bottom: 0,
-              left: 0,
-              right: 0,
-            }}
-          />
-          <canvas
-            ref={canvasRef}
-            style={{
-              position: 'absolute',
-              margin: 'auto',
-              textAlign: 'center',
-              top: 0,
-              left: 0,
-              right: 0,
-            }}
-          />
-        </>
-      )}
+      <Webcam
+        audio={false}
+        mirrored={true}
+        videoConstraints={videoConstraints}
+        ref={webcamRef}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          top: 0,
+          left: 0,
+          right: 0,
+        }}
+      />
       {!isPC && (
         <ReturnButton
           src="/svgs/return-button.svg"
@@ -278,6 +280,7 @@ export default function App() {
           png={pngURL}
           clickTry={() => {
             setStage('ready')
+            cancelAnimationFrame(animationFrameId)
             handleStartDrawing(false, facingMode)
           }}
         />
