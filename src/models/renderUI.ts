@@ -7,6 +7,7 @@ export const POSENET_CONFIG = {
 
 export const DEFAULT_LINE_WIDTH = 2
 export const DEFAULT_RADIUS = 4
+export const INTERVAL_TIME = 8000
 
 export class RenderUI {
   ctx: CanvasRenderingContext2D
@@ -100,12 +101,20 @@ export class RenderUI {
     }
   }
 
+  isSkip(time: number): boolean {
+    const elapsedTime = time - 3000
+    const elapsedIntervalTime = elapsedTime % INTERVAL_TIME
+    if (elapsedIntervalTime > 7000) {
+      return true
+    }
+    return false
+  }
+
   drawGameUI(time: number, pictograms: string[]) {
     if (time < 3000) {
       this.drawCountDownUI(time)
     } else {
       const elapsedTime = time - 3000
-      const INTERVAL_TIME = 8000
       const count = Math.floor(elapsedTime / INTERVAL_TIME)
       const elapsedIntervalTime = elapsedTime % INTERVAL_TIME
       if (elapsedIntervalTime < 2000) {

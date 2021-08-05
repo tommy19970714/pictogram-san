@@ -180,6 +180,16 @@ export default function App() {
         flipHorizontal: false,
       })
 
+      const elapsedTime = Date.now() - startTime
+      const renderUI = new RenderUI(context, canvas.width, canvas.height)
+      if (elapsedTime > 34000 && elapsedTime < 35000) {
+        const pngURL = canvas.toDataURL('image/png')
+        setPngURL(pngURL)
+      }
+      if (renderUI.isSkip(elapsedTime)) {
+        return
+      }
+
       context.clearRect(0, 0, canvas.width, canvas.height)
       context.fillStyle = 'white'
       context.fillRect(0, 0, canvas.width, canvas.height)
@@ -196,14 +206,8 @@ export default function App() {
       )
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
-      const renderUI = new RenderUI(context, canvas.width, canvas.height)
-      const elapsedTime = Date.now() - startTime
       if (isGame && elapsedTime < 44000) {
         renderUI.drawGameUI(elapsedTime, pictogramList)
-        if (elapsedTime > 34000 && elapsedTime < 35000) {
-          const pngURL = canvas.toDataURL('image/png')
-          setPngURL(pngURL)
-        }
       }
     })()
   }
