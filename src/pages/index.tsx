@@ -120,7 +120,7 @@ export default function App() {
     const resolution: InputResolution = { width: 128, height: 128 }
     const net = await createDetector(modelName, {
       quantBytes: 2, // 4
-      architecture: 'MobileNetV1', // ResNet50
+      architecture: 'ResNet50', // MobileNetV1
       outputStride: 16,
       inputResolution: resolution,
     })
