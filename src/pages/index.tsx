@@ -79,9 +79,7 @@ export default function App() {
   const handleFaceModeClick = () => {
     const mode = facingMode === 'user' ? 'environment' : 'user'
     setFacingMode(mode)
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId)
-    }
+    cancelAnimationFrame(animationFrameId)
     handleStartDrawing(false, mode)
   }
 
