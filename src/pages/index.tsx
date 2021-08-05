@@ -180,7 +180,7 @@ export default function App() {
 
       const elapsedTime = Date.now() - startTime
       const renderUI = new RenderUI(context, canvas.width, canvas.height)
-      if (elapsedTime > 34000 && elapsedTime < 35000) {
+      if (elapsedTime > 40000 && elapsedTime < 41000) {
         const pngURL = canvas.toDataURL('image/png')
         setPngURL(pngURL)
       }
