@@ -33,3 +33,11 @@ export const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   'kata.svg',
   'Rhythmic.svg',
 ]
+
+export const ORDERED_OLYMPIC_PICTOGRAMS_SVGS: string[] = [
+  'Softball.svg',
+  'Football.svg',
+  'Diving.svg	',
+  'Gymnastics.svg	',
+  'Trampoline.svg',
+]

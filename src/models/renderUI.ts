@@ -38,7 +38,7 @@ export class RenderUI {
 
   drawBigPictogramUI(index: number, pictograms: string[]) {
     const svg = document.createElement('img')
-    svg.src = '/pictograms/' + pictograms[index]
+    svg.src = '/orderedPictograms/' + pictograms[index]
     this.ctx.clearRect(0, 0, this.width, this.height / 2)
     this.ctx.fillStyle = 'White'
     this.ctx.fillRect(0, 0, this.width, this.height / 2)
@@ -53,7 +53,7 @@ export class RenderUI {
 
   drawSmallPictogramUI(index: number, pictograms: string[]) {
     const svg = document.createElement('img')
-    svg.src = '/pictograms/' + pictograms[index]
+    svg.src = '/orderedPictograms/' + pictograms[index]
     this.ctx.fillStyle = '#032164'
     this.ctx.drawImage(
       svg,
@@ -106,20 +106,20 @@ export class RenderUI {
     } else {
       const elapsedTime = time - 3000
       const INTERVAL_TIME = 800
-      const SPLIT_NUM = 5
+      const SPLIT_NUM = 4
       const multi = INTERVAL_TIME * SPLIT_NUM
-      const count = Math.floor(elapsedTime / INTERVAL_TIME / 5)
-      const index = Math.floor(elapsedTime / INTERVAL_TIME) % 5
+      const count = Math.floor(elapsedTime / INTERVAL_TIME / 4)
+      const index = Math.floor(elapsedTime / INTERVAL_TIME) % 4
       const splitTime = (elapsedTime % multi) / multi
       if (index < 2) {
         if (count < SPLIT_NUM + 1) {
           this.drawBigPictogramUI(count, pictograms)
         }
-      } else if (index === 4) {
+      } else if (index === 3) {
         this.drawFocusUI(splitTime)
       } else {
         this.drawSmallPictogramUI(count, pictograms)
-        this.drawCountUpUI(count + 1, 6)
+        this.drawCountUpUI(count + 1, 5)
       }
     }
   }

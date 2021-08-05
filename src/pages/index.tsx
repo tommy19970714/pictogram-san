@@ -14,7 +14,7 @@ import { RenderUI } from '../models/renderUI'
 import { KeypointsRingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import Loader from '../components/Loader'
-import { OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
+import { ORDERED_OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton, PinkButton } from '../components/Buttons'
 import Modal from '../components/Modal'
 import { Buttons, ReturnButton, SmallText } from '../styles/TopPage'
@@ -34,13 +34,15 @@ export default function App() {
   const [animationFrameId, setAnimationFrameId] = useState<number>(0)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [pictogramList, setPictogramList] = useState<string[]>(
-    OLYMPIC_PICTOGRAMS_SVGS
+    ORDERED_OLYMPIC_PICTOGRAMS_SVGS
   )
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
   const [pngURL, setPngURL] = useState<string>('')
 
   useEffect(() => {
-    setPictogramList(OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random()))
+    // setPictogramList(
+    //   ORDERED_OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random())
+    // )
     handleStartDrawing(false, facingMode)
   }, [])
 
