@@ -63,7 +63,7 @@ export const PhotoPreview = (props: { png: string; clickTry: () => void }) => {
       <Link
         href={
           'https://twitter.com/intent/tweet?text=' +
-          'ピクトグラムチャレンジやってみた！%0D%0A↓フォロワーにリレーをつないでオリンピックを盛り上げよう！%0D%0A' +
+          'ピクトグラムチャレンジやってみた！%0D%0A' +
           '&hashtags=PictogramChallenge' +
           '&url=https://pictogram-san.com'
         }
