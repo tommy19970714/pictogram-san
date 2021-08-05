@@ -7,7 +7,7 @@ import {
   Pose,
 } from '@tensorflow-models/pose-detection'
 import { Vector2D } from '@tensorflow-models/pose-detection/dist/posenet/types'
-import { KeypointsRingBuffer } from './RingBuffer'
+import { RingBuffer } from './RingBuffer'
 
 export const POSENET_CONFIG = {
   maxPoses: 1,
@@ -21,17 +21,17 @@ export class Render {
   ctx: CanvasRenderingContext2D
   modelName: SupportedModels
   modelConfig: any
-  keypointsBuffer: KeypointsRingBuffer
+  ringBuffer: RingBuffer
 
   constructor(
     model: SupportedModels,
     context: CanvasRenderingContext2D,
-    keypointsBuffer: KeypointsRingBuffer
+    ringBuffer: RingBuffer
   ) {
     this.modelName = model
     this.ctx = context
     this.modelConfig = { ...POSENET_CONFIG }
-    this.keypointsBuffer = keypointsBuffer
+    this.ringBuffer = ringBuffer
   }
 
   /**
@@ -115,12 +115,20 @@ export class Render {
   drawStickFigure(keypoints: Keypoint[]) {
     this.ctx.fillStyle = '#032164'
 
-    this.keypointsBuffer.add(keypoints)
-    const currentKP = this.keypointsBuffer.getAverage()
+    this.ringBuffer.add(keypoints)
+    const currentKP = this.ringBuffer.getAverage()
 
     const faceCenter = this.getFaceCenter(currentKP)
-    const faceRadius = 35
-    const stickRadius1 = faceRadius * 0.75
+    const leftNose2Ear = Math.hypot(
+      currentKP[1].x - currentKP[0].x,
+      currentKP[1].y - currentKP[0].y
+    )
+    const rightNose2Ear = Math.hypot(
+      currentKP[0].x - currentKP[2].x,
+      currentKP[0].y - currentKP[2].y
+    )
+    const faceRadius = Math.max(leftNose2Ear, rightNose2Ear) * 2
+    const stickRadius1 = faceRadius * 0.6
     const stickRadius2 = stickRadius1 * 0.75
     const stickRadius3 = stickRadius2 * 0.75
 
