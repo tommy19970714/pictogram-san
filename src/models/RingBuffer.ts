@@ -1,26 +1,30 @@
 import { Keypoint } from '@tensorflow-models/pose-detection'
 
-export class RingBuffer {
-  bit: number = 3
-  size: number = 1 << this.bit
-  mask: number = (1 << this.bit) - 1
+export class KeypointsRingBuffer {
+  bitLength: number = 0
+  width: number = 0
+  size: number = 0
+  mask: number = 0
   idx: number = 0
   count: number = 0
   ringBuffer: Keypoint[][] = []
   sumArray: Keypoint[] = []
 
-  constructor() {
+  constructor(width: number, bitLength: number) {
+    this.bitLength = bitLength
+    this.width = width
+    this.size = 1 << this.bitLength
+    this.mask = this.size - 1
     this.ringBuffer = new Array(this.size)
-    this.sumArray = new Array(17)
-    this.mask = (1 << 3) - 1
-    for (let i = 0; i < 17; i++) {
+    this.sumArray = new Array(this.width)
+    for (let i = 0; i < this.width; i++) {
       this.sumArray[i] = { x: 0, y: 0, score: 0, name: '' }
     }
   }
 
   add(keypoints: Keypoint[]) {
     if (this.count >= this.size) {
-      for (let i = 0; i < 17; i++) {
+      for (let i = 0; i < this.width; i++) {
         const temp = this.sumArray[i].score || 0
         this.sumArray[i].score =
           temp - (this.ringBuffer[this.idx][i].score || 0)
@@ -31,9 +35,9 @@ export class RingBuffer {
       this.count += 1
     }
 
-    this.ringBuffer[this.idx] = keypoints.slice(0, 17)
+    this.ringBuffer[this.idx] = keypoints.slice(0, this.width)
 
-    for (let i = 0; i < 17; i++) {
+    for (let i = 0; i < this.width; i++) {
       const temp = this.sumArray[i].score || 0
       this.sumArray[i].score = temp + (this.ringBuffer[this.idx][i].score || 0)
       this.sumArray[i].name = this.ringBuffer[this.idx][i].name
