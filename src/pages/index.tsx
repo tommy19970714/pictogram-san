@@ -128,7 +128,9 @@ export default function App() {
     })
     await handleLoadWaiting()
     if (webcamRef.current && canvasRef.current && net) {
-      setStage('ready')
+      if (stage === 'loading') {
+        setStage('ready')
+      }
       const webcam = webcamRef.current.video as HTMLVideoElement
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
