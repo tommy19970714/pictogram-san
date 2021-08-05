@@ -37,7 +37,7 @@ export const OLYMPIC_PICTOGRAMS_SVGS: string[] = [
 export const ORDERED_OLYMPIC_PICTOGRAMS_SVGS: string[] = [
   'Softball.svg',
   'Football.svg',
-  'Diving.svg	',
-  'Gymnastics.svg	',
+  'Diving.svg',
+  'Rhythmic.svg',
   'Trampoline.svg',
 ]
