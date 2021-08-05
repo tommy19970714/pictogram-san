@@ -38,7 +38,7 @@ export class RenderUI {
 
   drawBigPictogramUI(index: number, pictograms: string[]) {
     const svg = document.createElement('img')
-    svg.src = '/orderedPictograms/' + pictograms[index]
+    svg.src = '/pictograms/' + pictograms[index]
     this.ctx.clearRect(0, 0, this.width, this.height / 2)
     this.ctx.fillStyle = 'White'
     this.ctx.fillRect(0, 0, this.width, this.height / 2)
@@ -53,7 +53,7 @@ export class RenderUI {
 
   drawSmallPictogramUI(index: number, pictograms: string[]) {
     const svg = document.createElement('img')
-    svg.src = '/orderedPictograms/' + pictograms[index]
+    svg.src = '/pictograms/' + pictograms[index]
     this.ctx.fillStyle = '#032164'
     this.ctx.drawImage(
       svg,
