@@ -221,35 +221,31 @@ export default function App() {
       <audio ref={audioRef} preload="true">
         <source src="./pictogram_san_bgm.mp3" type="audio/mp3" />
       </audio>
-      {stage !== 'share' && (
-        <>
-          <Webcam
-            audio={false}
-            mirrored={true}
-            videoConstraints={videoConstraints}
-            ref={webcamRef}
-            style={{
-              position: 'absolute',
-              margin: 'auto',
-              textAlign: 'center',
-              bottom: 0,
-              left: 0,
-              right: 0,
-            }}
-          />
-          <canvas
-            ref={canvasRef}
-            style={{
-              position: 'absolute',
-              margin: 'auto',
-              textAlign: 'center',
-              top: 0,
-              left: 0,
-              right: 0,
-            }}
-          />
-        </>
-      )}
+      <Webcam
+        audio={false}
+        mirrored={true}
+        videoConstraints={videoConstraints}
+        ref={webcamRef}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          top: 0,
+          left: 0,
+          right: 0,
+        }}
+      />
       {!isPC && (
         <ReturnButton
           src="/svgs/return-button.svg"
@@ -280,6 +276,7 @@ export default function App() {
           png={pngURL}
           clickTry={() => {
             setStage('ready')
+            cancelAnimationFrame(animationFrameId)
             handleStartDrawing(false, facingMode)
           }}
         />
