@@ -11,7 +11,7 @@ import {
 } from '@tensorflow-models/pose-detection'
 import { Render } from '../models/render'
 import { RenderUI } from '../models/renderUI'
-import { KeypointsRingBuffer } from '../models/RingBuffer'
+import { RingBuffer } from '../models/RingBuffer'
 import { useWindowDimensions } from '../hooks/useWindowDimensions'
 import Loader from '../components/Loader'
 import { ORDERED_OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
@@ -27,7 +27,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
-  const keypointsBuffre = new KeypointsRingBuffer(17, 3)
+  const ringBuffre = new RingBuffer()
   const { width, height } = useWindowDimensions()
   const isPC = width > height
   const [stage, setStage] = useState<Stage>('loading')
@@ -193,7 +193,7 @@ export default function App() {
       context.fillRect(0, 0, canvas.width, canvas.height)
       mirrorContext.clearRect(0, 0, canvas.width, canvas.height)
 
-      const render = new Render(modelName, mirrorContext, keypointsBuffre)
+      const render = new Render(modelName, mirrorContext, ringBuffre)
       render.drawResult(predictions[0])
       mirrorContext.drawImage(
         webcam,
