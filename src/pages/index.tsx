@@ -196,9 +196,9 @@ export default function App() {
 
       const renderUI = new RenderUI(context, canvas.width, canvas.height)
       const elapsedTime = Date.now() - startTime
-      if (isGame && elapsedTime < 31000) {
+      if (isGame && elapsedTime < 43000) {
         renderUI.drawGameUI(elapsedTime, pictogramList)
-        if (elapsedTime > 26000 && elapsedTime < 27000) {
+        if (elapsedTime > 34000 && elapsedTime < 35000) {
           const pngURL = canvas.toDataURL('image/png')
           setPngURL(pngURL)
         }
@@ -219,7 +219,7 @@ export default function App() {
   return (
     <div>
       <audio ref={audioRef} preload="true">
-        <source src="./pictogram-san_bgm.mp3" type="audio/mp3" />
+        <source src="./pictogram_san_bgm.mp3" type="audio/mp3" />
       </audio>
       {stage !== 'share' && (
         <>

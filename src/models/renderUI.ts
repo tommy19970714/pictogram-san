@@ -105,18 +105,16 @@ export class RenderUI {
       this.drawCountDownUI(time)
     } else {
       const elapsedTime = time - 3000
-      const INTERVAL_TIME = 800
-      const SPLIT_NUM = 4
-      const multi = INTERVAL_TIME * SPLIT_NUM
-      const count = Math.floor(elapsedTime / INTERVAL_TIME / 4)
-      const index = Math.floor(elapsedTime / INTERVAL_TIME) % 4
-      const splitTime = (elapsedTime % multi) / multi
-      if (index < 2) {
-        if (count < SPLIT_NUM + 1) {
-          this.drawBigPictogramUI(count, pictograms)
-        }
-      } else if (index === 3) {
-        this.drawFocusUI(splitTime)
+      const INTERVAL_TIME = 8000
+      const count = Math.floor(elapsedTime / INTERVAL_TIME)
+      const elapsedIntervalTime = elapsedTime % INTERVAL_TIME
+      if (elapsedIntervalTime < 2000) {
+        this.drawBigPictogramUI(count, pictograms)
+      } else if (elapsedIntervalTime > 7000) {
+        this.drawFocusUI(1)
+      } else if (elapsedIntervalTime > 6000) {
+        const focusTime = (elapsedIntervalTime - 6000) / 1000
+        this.drawFocusUI(focusTime)
       } else {
         this.drawSmallPictogramUI(count, pictograms)
         this.drawCountUpUI(count + 1, 5)
