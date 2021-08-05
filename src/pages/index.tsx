@@ -196,7 +196,7 @@ export default function App() {
 
       const renderUI = new RenderUI(context, canvas.width, canvas.height)
       const elapsedTime = Date.now() - startTime
-      if (isGame && elapsedTime < 43000) {
+      if (isGame && elapsedTime < 44000) {
         renderUI.drawGameUI(elapsedTime, pictogramList)
         if (elapsedTime > 34000 && elapsedTime < 35000) {
           const pngURL = canvas.toDataURL('image/png')
