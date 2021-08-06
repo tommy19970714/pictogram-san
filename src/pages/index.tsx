@@ -253,12 +253,13 @@ export default function App() {
           bottom: 0,
           left: 0,
           right: 0,
-          width: isPC ? height / 2 : width,
-          height: height / 2,
+          width: 1080,
+          height: 540,
         }}
         ref={videoRef}
-        src="./test.mp4"
-      />
+      >
+        <source src="./test.mp4" type="video/mp4"></source>
+      </video>
       <canvas
         ref={canvasRef}
         style={{
