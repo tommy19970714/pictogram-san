@@ -53,6 +53,9 @@ export default function App() {
       cancelAnimationFrame(animationFrameId)
       handleStartDrawing(true, facingMode)
     }
+    if (videoRef.current) {
+      videoRef.current.play()
+    }
     setTimeout(() => {
       audioPlay()
     }, 3200)
@@ -126,11 +129,12 @@ export default function App() {
       inputResolution: resolution,
     })
     await handleLoadWaiting()
-    if (webcamRef.current && canvasRef.current && net) {
+    if (videoRef.current && canvasRef.current && net) {
       if (stage === 'loading') {
         setStage('ready')
       }
-      const webcam = webcamRef.current.video as HTMLVideoElement
+      // const webcam = webcamRef.current.video as HTMLVideoElement
+      const webcam = videoRef.current
       const canvas = canvasRef.current
       webcam.width = webcam.videoWidth
       webcam.height = webcam.videoHeight
@@ -238,6 +242,7 @@ export default function App() {
           bottom: 0,
           left: 0,
           right: 0,
+          visibility: 'hidden',
         }}
       />
       <video
