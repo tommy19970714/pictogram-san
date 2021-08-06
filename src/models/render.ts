@@ -103,10 +103,23 @@ export class Render {
       const score2 = kp2.score != null ? kp2.score : 1
       const scoreThreshold = this.modelConfig.scoreThreshold || 0
 
+      const headKeypoints = [
+        'nose',
+        'right_eye',
+        'left_eye',
+        'right_ear',
+        'left_ear',
+      ]
+      if (
+        headKeypoints.includes(kp1.name || '') ||
+        headKeypoints.includes(kp2.name || '')
+      ) {
+        return
+      }
       if (score1 >= scoreThreshold && score2 >= scoreThreshold) {
         this.ctx.beginPath()
-        this.ctx.moveTo(kp1.x, kp1.y)
-        this.ctx.lineTo(kp2.x, kp2.y)
+        this.ctx.moveTo(kp1.x, kp1.y + this.ctx.canvas.height / 2)
+        this.ctx.lineTo(kp2.x, kp2.y + this.ctx.canvas.height / 2)
         this.ctx.stroke()
       }
     })

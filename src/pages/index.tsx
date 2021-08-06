@@ -202,6 +202,7 @@ export default function App() {
         canvas.width,
         (canvas.height / 2) * (webcam.height / webcam.width)
       )
+      render.drawSkeleton(predictions[0].keypoints)
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
       if (isGame && elapsedTime < 44000) {
