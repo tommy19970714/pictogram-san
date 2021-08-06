@@ -27,7 +27,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const modelName = SupportedModels.PoseNet
-  const keypointsBuffre = new KeypointsRingBuffer(17, 3)
+  const keypointsBuffre = new KeypointsRingBuffer(17, 2)
   const { width, height } = useWindowDimensions()
   const isPC = width > height
   const [stage, setStage] = useState<Stage>('loading')
@@ -117,9 +117,9 @@ export default function App() {
     isGame: boolean,
     cameraMode: 'user' | 'environment'
   ) => {
-    const resolution: InputResolution = { width: 128, height: 128 }
+    const resolution: InputResolution = { width: 256, height: 256 }
     const net = await createDetector(modelName, {
-      quantBytes: 2, // 4
+      quantBytes: 4, // 4
       architecture: 'ResNet50', // MobileNetV1
       outputStride: 16,
       inputResolution: resolution,
@@ -202,6 +202,7 @@ export default function App() {
         canvas.width,
         (canvas.height / 2) * (webcam.height / webcam.width)
       )
+      render.drawSkeleton(predictions[0].keypoints)
       context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
       if (isGame && elapsedTime < 44000) {
