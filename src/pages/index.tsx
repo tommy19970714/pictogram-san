@@ -26,6 +26,7 @@ export default function App() {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const modelName = SupportedModels.PoseNet
   const keypointsBuffre = new KeypointsRingBuffer(17, 3)
   const { width, height } = useWindowDimensions()
@@ -142,14 +143,14 @@ export default function App() {
       mirrorCanvas.height = canvas.height
       const mirrorContext = mirrorCanvas.getContext('2d')
 
-      if (context && mirrorContext) {
+      if (context && mirrorContext && videoRef.current) {
         if (cameraMode === 'user') {
           mirrorContext.scale(-1, 1)
           mirrorContext.translate(-canvas.width, 0)
         }
         drawimage(
           net,
-          webcam,
+          videoRef.current,
           context,
           canvas,
           mirrorContext,
@@ -238,6 +239,18 @@ export default function App() {
           left: 0,
           right: 0,
         }}
+      />
+      <video
+        style={{
+          position: 'absolute',
+          margin: 'auto',
+          textAlign: 'center',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+        ref={videoRef}
+        src="./test.mp4"
       />
       <canvas
         ref={canvasRef}
