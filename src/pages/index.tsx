@@ -17,7 +17,7 @@ import Loader from '../components/Loader'
 import { ORDERED_OLYMPIC_PICTOGRAMS_SVGS } from '../utils/OlympicPictograms'
 import { DefaultButton, PinkButton } from '../components/Buttons'
 import Modal from '../components/Modal'
-import { Buttons, ReturnButton, SmallText } from '../styles/TopPage'
+import { Buttons, ReturnButton, SmallText, FullButton } from '../styles/TopPage'
 import { PhotoPreview } from '../components/PhotoPreview'
 
 type Stage = 'loading' | 'ready' | 'moving' | 'share'
@@ -38,19 +38,20 @@ export default function App() {
   )
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
   const [pngURL, setPngURL] = useState<string>('')
+  const [isFullScreen, setIsFullScreen] = useState<boolean>(false)
 
   useEffect(() => {
     // setPictogramList(
     //   ORDERED_OLYMPIC_PICTOGRAMS_SVGS.sort(() => 0.5 - Math.random())
     // )
-    handleStartDrawing(false, facingMode)
+    handleStartDrawing(false, facingMode, isFullScreen)
   }, [])
 
   const handleStartGame = () => {
     setStage('moving')
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId)
-      handleStartDrawing(true, facingMode)
+      handleStartDrawing(true, facingMode, isFullScreen)
     }
     setTimeout(() => {
       audioPlay()
@@ -80,7 +81,14 @@ export default function App() {
     const mode = facingMode === 'user' ? 'environment' : 'user'
     setFacingMode(mode)
     cancelAnimationFrame(animationFrameId)
-    handleStartDrawing(false, mode)
+    handleStartDrawing(false, mode, isFullScreen)
+  }
+
+  const handleFullScreenClick = () => {
+    const isFull = !isFullScreen
+    setIsFullScreen(isFull)
+    cancelAnimationFrame(animationFrameId)
+    handleStartDrawing(false, facingMode, isFull)
   }
 
   const audioPlay = () => {
@@ -115,7 +123,8 @@ export default function App() {
 
   const handleStartDrawing = async (
     isGame: boolean,
-    cameraMode: 'user' | 'environment'
+    cameraMode: 'user' | 'environment',
+    isFull: boolean
   ) => {
     const resolution: InputResolution = { width: 256, height: 256 }
     const net = await createDetector(modelName, {
@@ -154,7 +163,8 @@ export default function App() {
           canvas,
           mirrorContext,
           mirrorCanvas,
-          isGame
+          isGame,
+          isFull
         )
       }
     }
@@ -167,7 +177,8 @@ export default function App() {
     canvas: HTMLCanvasElement,
     mirrorContext: CanvasRenderingContext2D,
     mirrorCanvas: HTMLCanvasElement,
-    isGame: boolean
+    isGame: boolean,
+    isFull: boolean
   ) => {
     const startTime = Date.now()
     ;(async function drawMask() {
@@ -195,15 +206,23 @@ export default function App() {
 
       const render = new Render(modelName, mirrorContext, keypointsBuffre)
       render.drawResult(predictions[0])
-      mirrorContext.drawImage(
-        webcam,
+      if (!isFull) {
+        mirrorContext.drawImage(
+          webcam,
+          0,
+          width > height ? webcam.height : canvas.height / 2,
+          canvas.width,
+          (canvas.height / 2) * (webcam.height / webcam.width)
+        )
+        render.drawSkeleton(predictions[0].keypoints)
+      }
+      context.drawImage(
+        mirrorCanvas,
         0,
-        width > height ? webcam.height : canvas.height / 2,
+        isFull ? canvas.height / 4 : 0,
         canvas.width,
-        (canvas.height / 2) * (webcam.height / webcam.width)
+        canvas.height
       )
-      render.drawSkeleton(predictions[0].keypoints)
-      context.drawImage(mirrorCanvas, 0, 0, canvas.width, canvas.height)
 
       if (isGame && elapsedTime < 44000) {
         renderUI.drawGameUI(elapsedTime, pictogramList)
@@ -251,13 +270,20 @@ export default function App() {
           right: 0,
         }}
       />
-      {!isPC && (
+      {/* {!isPC && ( */}
+      <>
         <ReturnButton
           src="/svgs/return-button.svg"
           alt="return"
           onClick={handleFaceModeClick}
         />
-      )}
+        <FullButton
+          src="/svgs/fullscreen.svg"
+          alt="fullscreen"
+          onClick={handleFullScreenClick}
+        />
+      </>
+      {/* )} */}
       {stage === 'ready' && (
         <Buttons>
           <PinkButton onClick={handleGameStartClick}>Start Game</PinkButton>

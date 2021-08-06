@@ -15,6 +15,13 @@ export const ReturnButton = styled.img`
   top: 10px;
 }`
 
+export const FullButton = styled.img`
+  cursor: pointer;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}`
+
 export const Buttons = styled.div`
   position: fixed;
   margin: auto;
